@@ -692,7 +692,8 @@ async function readFile(file, idx) {
       headers:{
         'Content-Type':'application/json',
         'anthropic-dangerous-direct-browser-access':'true',
-        'x-api-key': document.getElementById('api-key-input').value.trim()
+        'x-api-key': document.getElementById('api-key-input').value.trim(),
+        'anthropic-version': '2023-06-01'
       },
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content}]})
     });
