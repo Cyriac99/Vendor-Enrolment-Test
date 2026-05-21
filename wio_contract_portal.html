@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wio Contract Management Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0c10;--ink2:#2d3142;--muted:#6b7080;--faint:#a8adb8;
+  --bg:#f0f2f7;--surface:#fff;--border:#dde1eb;--border2:#c4c9d8;
+  --teal:#006b5e;--teal-light:#e0f5f2;--teal-mid:#00a896;
+  --blue:#1635b8;--blue-light:#e8edfc;--blue-mid:#2448d4;
+  --amber:#b86000;--amber-light:#fef3e2;
+  --red:#b51c1c;--red-light:#fdeaea;
+  --green:#1a6b3a;--green-light:#e4f5ec;
+  --purple:#5c35a0;--purple-light:#ede8fc;
+  --gold:#8b6914;--gold-light:#fdf3d0;
+  --r:8px;--r2:12px;
+  --sh:0 1px 3px rgba(10,12,16,.08),0 0 0 1px rgba(10,12,16,.04);
+  --sh2:0 4px 16px rgba(10,12,16,.1),0 0 0 1px rgba(10,12,16,.04);
+  --sh3:0 12px 40px rgba(10,12,16,.14),0 0 0 1px rgba(10,12,16,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.6;min-height:100vh;}
+
+/* ── ROLE LANDING ── */
+.landing{position:fixed;inset:0;background:linear-gradient(135deg,#050810 0%,#0d1535 50%,#080e20 100%);display:flex;align-items:center;justify-content:center;z-index:1000;transition:opacity .4s ease;}
+.landing.out{opacity:0;pointer-events:none;}
+.landing-box{text-align:center;max-width:680px;width:92vw;}
+.landing-logo{font-size:34px;font-weight:700;color:#fff;letter-spacing:-1px;margin-bottom:4px;}
+.landing-logo span{color:#00a896;}
+.landing-sub{font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px;}
+.landing-desc{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:48px;}
+.landing-label{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:18px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
+.role-card{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:14px;padding:24px 18px;cursor:pointer;transition:all .2s ease;text-align:center;}
+.role-card:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.22);transform:translateY(-2px);}
+.role-card.vendor:hover{border-color:#00a896;background:rgba(0,168,150,.1);}
+.role-card.procurement:hover{border-color:#6c8fff;background:rgba(36,72,212,.12);}
+.role-card.legal:hover{border-color:#c4a0f5;background:rgba(92,53,160,.12);}
+.role-card.responsible:hover{border-color:#f5c842;background:rgba(139,105,20,.12);}
+.rc-icon{font-size:32px;margin-bottom:10px;}
+.rc-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:5px;}
+.rc-sub{font-size:11px;color:rgba(255,255,255,.4);line-height:1.5;}
+.landing-footer{font-size:11px;color:rgba(255,255,255,.2);}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--ink);height:52px;display:flex;align-items:center;padding:0 22px;gap:14px;position:sticky;top:0;z-index:200;}
+.tb-logo{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.4px;}
+.tb-logo span{color:#00a896;}
+.tb-sep{width:1px;height:18px;background:rgba(255,255,255,.15);}
+.tb-module{font-size:11px;color:rgba(255,255,255,.45);}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.tb-role{font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;letter-spacing:.4px;font-family:'DM Mono',monospace;}
+.tb-role.vendor{background:rgba(0,168,150,.2);color:#00d4b8;}
+.tb-role.procurement{background:rgba(36,72,212,.2);color:#7a9fff;}
+.tb-role.legal{background:rgba(92,53,160,.2);color:#c4a0f5;}
+.tb-role.responsible{background:rgba(139,105,20,.2);color:#f5c842;}
+.tb-switch{font-size:11px;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 8px;border-radius:5px;transition:all .15s;}
+.tb-switch:hover{color:#fff;background:rgba(255,255,255,.08);}
+.tb-notif{position:relative;cursor:pointer;}
+.tb-notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--ink);}
+
+/* ── SHELL ── */
+.shell{display:flex;min-height:calc(100vh - 52px);}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);padding:18px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;display:flex;flex-direction:column;}
+.sb-section{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--faint);padding:0 16px 8px;margin-top:14px;}
+.sb-section:first-child{margin-top:0;}
+.sb-nav{display:flex;flex-direction:column;gap:1px;padding:0 8px;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .12s;font-size:12px;font-weight:500;color:var(--muted);}
+.sb-item:hover{background:var(--bg);color:var(--ink);}
+.sb-item.active{background:var(--blue-light);color:var(--blue-mid);font-weight:600;}
+.sb-item .si{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;background:var(--red-light);color:var(--red);font-family:'DM Mono',monospace;}
+.sb-divider{height:1px;background:var(--border);margin:10px 14px;}
+.sb-footer{margin-top:auto;padding:14px;}
+.step-indicator{background:var(--bg);border-radius:8px;padding:10px 12px;}
+.step-ind-label{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.step-dots{display:flex;gap:4px;align-items:center;}
+.step-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:var(--muted);font-family:'DM Mono',monospace;transition:all .2s;flex-shrink:0;}
+.step-dot.done{background:var(--green);border-color:var(--green);color:#fff;}
+.step-dot.active{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff;}
+.step-line{flex:1;height:1.5px;background:var(--border);}
+.step-line.done{background:var(--green);}
+
+/* ── MAIN ── */
+.main{flex:1;padding:22px 26px;overflow-y:auto;}
+.page-hdr{margin-bottom:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.ph-title{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:3px;}
+.ph-sub{font-size:12px;color:var(--muted);}
+.ph-actions{display:flex;gap:8px;flex-shrink:0;align-items:center;}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--sh);margin-bottom:14px;overflow:hidden;}
+.card-hdr{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.card-title{font-size:13px;font-weight:600;}
+.card-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.card-body{padding:16px 18px;}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px;box-shadow:var(--sh);}
+.stat-num{font-size:26px;font-weight:700;letter-spacing:-1px;font-family:'DM Mono',monospace;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--muted);}
+
+/* ── WORKFLOW STEPS ── */
+.workflow-steps{display:flex;gap:0;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--sh);}
+.ws-step{flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 8px;font-size:10px;font-weight:500;color:var(--muted);border-right:1px solid var(--border);cursor:pointer;transition:all .15s;position:relative;text-align:center;gap:4px;}
+.ws-step:last-child{border-right:none;}
+.ws-step:hover{background:var(--bg);}
+.ws-step.active{background:var(--blue-light);color:var(--blue-mid);font-weight:600;}
+.ws-step.done{background:var(--green-light);color:var(--green);}
+.ws-step.locked{opacity:.35;pointer-events:none;}
+.ws-num{width:22px;height:22px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
+.ws-step.active .ws-num{background:var(--blue-mid);color:#fff;}
+.ws-step.done .ws-num{background:var(--green);color:#fff;}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{background:var(--bg);padding:8px 11px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+.tbl th:hover{color:var(--ink);}
+.tbl td{padding:10px 11px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#fafbfd;}
+.tv{font-weight:600;font-size:12px;}
+.ts{font-size:11px;color:var(--muted);margin-top:1px;}
+
+/* ── PRIORITY DOTS ── */
+.p-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;flex-shrink:0;}
+.p1-dot{background:#e84025;} .p2-dot{background:#e8a800;} .p3-dot{background:#3060d0;} .p4-dot{background:#909088;}
+
+/* ── CHIPS ── */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;font-family:'DM Mono',monospace;white-space:nowrap;}
+.chip-draft{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.chip-submitted{background:var(--blue-light);color:var(--blue-mid);}
+.chip-review{background:var(--amber-light);color:var(--amber);}
+.chip-legal{background:var(--purple-light);color:var(--purple);}
+.chip-responsible{background:var(--gold-light);color:var(--gold);}
+.chip-approved{background:var(--green-light);color:var(--green);}
+.chip-rejected{background:var(--red-light);color:var(--red);}
+.chip-docusign{background:#e8f4fd;color:#0066cc;}
+.chip-completed{background:var(--green-light);color:var(--green);border:1px solid var(--green);}
+.chip-open{background:var(--green-light);color:var(--green);}
+.chip-closed{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.chip-onhold{background:var(--amber-light);color:var(--amber);}
+.chip-p1{background:#fff0ee;color:#9b2012;} .chip-p2{background:#fff8e6;color:#7a4f00;}
+.chip-p3{background:#eef4ff;color:#1a3a7a;} .chip-p4{background:#f2f2f0;color:#50504a;}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg3{grid-template-columns:1fr 1fr 1fr;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.span2{grid-column:span 2;}
+.field.span3{grid-column:span 3;}
+.field label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);}
+.field label .req{color:var(--red);margin-left:2px;}
+.field input,.field select,.field textarea{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:var(--bg);transition:all .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue-mid);background:var(--surface);box-shadow:0 0 0 3px rgba(36,72,212,.07);}
+.field textarea{resize:vertical;min-height:72px;}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 16px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--ink);color:#fff;} .btn-primary:hover{background:#1e2330;}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed;}
+.btn-secondary{background:var(--surface);color:var(--ink);border:1px solid var(--border);} .btn-secondary:hover{background:var(--bg);}
+.btn-teal{background:var(--teal);color:#fff;} .btn-teal:hover{background:#005248;}
+.btn-success{background:var(--green);color:#fff;} .btn-success:hover{background:#125530;}
+.btn-danger{background:var(--red-light);color:var(--red);border:1px solid #f5b8b8;} .btn-danger:hover{background:#fcd8d8;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);} .btn-ghost:hover{background:var(--bg);color:var(--ink);}
+.btn-purple{background:var(--purple);color:#fff;} .btn-purple:hover{background:#4a2a85;}
+.btn-gold{background:var(--gold);color:#fff;} .btn-gold:hover{background:#6b5010;}
+.btn-sm{padding:5px 11px;font-size:11px;}
+.btn-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center;}
+
+/* ── INFO BOXES ── */
+.info-box{padding:10px 13px;border-radius:7px;font-size:12px;display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;}
+.info-box .ib-i{font-size:13px;flex-shrink:0;margin-top:1px;}
+.ib-info{background:var(--blue-light);color:var(--blue-mid);}
+.ib-warn{background:var(--amber-light);color:var(--amber);}
+.ib-success{background:var(--green-light);color:var(--green);}
+.ib-neutral{background:var(--bg);color:var(--ink2);border:1px solid var(--border);}
+.ib-danger{background:var(--red-light);color:var(--red);}
+
+/* ── SECTION DIVIDER ── */
+.sec-div{display:flex;align-items:center;gap:8px;margin:16px 0 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--faint);}
+.sec-div::before,.sec-div::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{border:2px dashed var(--border2);border-radius:9px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);position:relative;}
+.upload-zone:hover{border-color:var(--blue-mid);background:var(--blue-light);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-zone-icon{font-size:28px;margin-bottom:8px;}
+.upload-zone-text{font-size:12px;color:var(--muted);}
+.upload-zone-text strong{color:var(--blue-mid);}
+.uploaded-file{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-top:8px;}
+.uf-icon{font-size:20px;flex-shrink:0;}
+.uf-info{flex:1;min-width:0;}
+.uf-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.uf-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+.uf-rm{background:none;border:none;cursor:pointer;color:var(--faint);font-size:16px;}
+.uf-rm:hover{color:var(--red);}
+
+/* ── REDLINE SUMMARY ── */
+.redline-container{border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.redline-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.redline-header.added{background:#e4f5ec;border-bottom:1px solid #a8ddb8;}
+.redline-header.removed{background:var(--red-light);border-bottom:1px solid #f5b8b8;}
+.redline-header.modified{background:var(--amber-light);border-bottom:1px solid #f5d090;}
+.redline-header.summary{background:var(--blue-light);border-bottom:1px solid #b3c9f5;}
+.rh-title{font-size:12px;font-weight:700;}
+.rh-count{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.08);font-family:'DM Mono',monospace;}
+.redline-item{padding:10px 16px;border-top:1px solid var(--border);background:var(--surface);font-size:12px;}
+.ri-clause{font-weight:600;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.ri-text{line-height:1.6;}
+.ri-before{color:var(--red);text-decoration:line-through;margin-bottom:4px;padding:4px 8px;background:var(--red-light);border-radius:4px;}
+.ri-after{color:var(--green);padding:4px 8px;background:var(--green-light);border-radius:4px;}
+.ri-new{color:var(--green);padding:4px 8px;background:var(--green-light);border-radius:4px;}
+.ri-removed{color:var(--red);padding:4px 8px;background:var(--red-light);border-radius:4px;text-decoration:line-through;}
+
+/* ── DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(10,12,16,.4);z-index:500;display:none;}
+.drawer-overlay.open{display:block;}
+.drawer{position:fixed;right:0;top:0;bottom:0;width:560px;max-width:96vw;background:var(--surface);box-shadow:-4px 0 32px rgba(10,12,16,.16);z-index:501;transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;}
+.drawer.open{transform:translateX(0);}
+.drawer-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.drawer-title{font-size:14px;font-weight:700;flex:1;}
+.drawer-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;}
+.drawer-close:hover{color:var(--ink);}
+.drawer-body{flex:1;overflow-y:auto;padding:18px;}
+.drawer-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--bg);}
+
+/* ── DETAIL FIELDS ── */
+.detail-sec{margin-bottom:18px;}
+.detail-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.df{}
+.df-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;}
+.df-val{font-size:12px;font-weight:500;}
+.df-val.mono{font-family:'DM Mono',monospace;font-size:11px;}
+
+/* ── TIMELINE ── */
+.timeline{}
+.tl-item{display:flex;gap:11px;padding-bottom:14px;position:relative;}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:12px;top:26px;bottom:0;width:1.5px;background:var(--border);}
+.tl-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:var(--surface);z-index:1;}
+.tl-dot.done{border-color:var(--green);background:var(--green-light);}
+.tl-dot.active{border-color:var(--blue-mid);background:var(--blue-light);}
+.tl-content{flex:1;padding-top:3px;}
+.tl-title{font-size:12px;font-weight:600;}
+.tl-meta{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,12,16,.65);z-index:700;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:14px;width:640px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--sh3);}
+.modal-hdr{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:16px;font-weight:700;}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;}
+.modal-body{padding:20px 22px;}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--bg);border-radius:0 0 14px 14px;}
+
+/* ── PRIORITY SECTIONS ── */
+.p-section{margin-bottom:20px;}
+.p-section-hdr{display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;font-size:12px;font-weight:600;}
+.p1-hdr{background:#fff0ee;border-color:#f5b8ae;color:#9b2012;}
+.p2-hdr{background:#fff8e6;border-color:#f5d580;color:#7a4f00;}
+.p3-hdr{background:#eef4ff;border-color:#b3c9f5;color:#1a3a7a;}
+.p4-hdr{background:#f2f2f0;border-color:#d8d4cc;color:#50504a;}
+.p-tbl-wrap{border:1px solid var(--border);border-radius:0 0 8px 8px;overflow:hidden;background:var(--surface);}
+
+/* ── FILTERS ── */
+.filters-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+.filter-sel{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--surface);color:var(--ink);}
+.filter-sel:focus{outline:none;border-color:var(--blue-mid);}
+.filter-search{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--surface);color:var(--ink);width:180px;}
+.filter-search:focus{outline:none;border-color:var(--blue-mid);}
+.pill-filter{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);transition:all .12s;}
+.pill-filter.active{background:var(--blue-mid);color:#fff;border-color:var(--blue-mid);}
+
+/* ── STEP PANELS ── */
+.view-panel{display:none;}
+.view-panel.active{display:block;}
+.sub-panel{display:none;}
+.sub-panel.active{display:block;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:7px;font-size:12px;font-weight:500;box-shadow:var(--sh3);transform:translateY(60px);opacity:0;transition:all .3s ease;z-index:9999;max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:40px 20px;color:var(--faint);}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-title{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+.empty-sub{font-size:12px;}
+
+/* ── LOADING ── */
+.loading-spin{display:inline-block;animation:spin 1s linear infinite;font-size:18px;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes popIn{from{transform:scale(.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+.pop-in{animation:popIn .3s ease forwards;}
+
+/* ── REDLINE AI STATUS ── */
+.ai-reading{background:var(--blue-light);border:1px solid var(--border);border-radius:9px;padding:20px;text-align:center;}
+.ai-prog{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px;}
+.ai-prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue-mid));border-radius:2px;transition:width .4s ease;}
+
+/* ── CONTRACT ACTIONS ── */
+.action-strip{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--bg);flex-wrap:wrap;}
+
+@media(max-width:768px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .sidebar{width:0;min-width:0;overflow:hidden;padding:0;}
+  .role-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ LANDING PAGE ════ -->
+<div class="landing" id="landing">
+  <div class="landing-box">
+    <div class="landing-logo">Wio <span>Portal</span></div>
+    <div class="landing-sub">Contract Management & Vendor Enrolment</div>
+    <div class="landing-desc">Powered by Wio Procurement · Legal · Operations</div>
+    <div class="landing-label">Select your role to continue</div>
+    <div class="role-grid">
+      <div class="role-card vendor" onclick="selectRole('vendor')">
+        <div class="rc-icon">🏢</div>
+        <div class="rc-title">Vendor</div>
+        <div class="rc-sub">Submit registrations, upload contracts, track review status</div>
+      </div>
+      <div class="role-card procurement" onclick="selectRole('procurement')">
+        <div class="rc-icon">📋</div>
+        <div class="rc-title">Procurement</div>
+        <div class="rc-sub">Manage contract priorities, initiate reviews, track pipeline</div>
+      </div>
+      <div class="role-card legal" onclick="selectRole('legal')">
+        <div class="rc-icon">⚖️</div>
+        <div class="rc-title">Legal</div>
+        <div class="rc-sub">Review contracts, upload redlines, provide legal sign-off</div>
+      </div>
+      <div class="role-card responsible" onclick="selectRole('responsible')">
+        <div class="rc-icon">✍️</div>
+        <div class="rc-title">Responsible Person</div>
+        <div class="rc-sub">Review scope, IT SLA sign-off, approve for DocuSign</div>
+      </div>
+    </div>
+    <div class="landing-footer">Wio Bank PJSC · Kissflow Contract Management · Live</div>
+  </div>
+</div>
+
+<!-- ════ TOPBAR ════ -->
+<div class="topbar" id="topbar" style="display:none">
+  <div class="tb-logo">Wio <span>Portal</span></div>
+  <div class="tb-sep"></div>
+  <div class="tb-module" id="tb-module">Contract Management</div>
+  <div class="tb-right">
+    <div id="tb-notif" class="tb-notif" onclick="toast('Notifications coming soon')" style="font-size:18px;cursor:pointer">🔔<div class="tb-notif-dot" id="notif-dot" style="display:none"></div></div>
+    <div class="tb-role" id="tb-role">VENDOR</div>
+    <div class="tb-switch" onclick="switchRole()">Switch role ↗</div>
+  </div>
+</div>
+
+<!-- ════ MAIN SHELL ════ -->
+<div class="shell" id="main-shell" style="display:none">
+
+<!-- ── VENDOR VIEW ── -->
+<div id="view-vendor" style="display:none;width:100%">
+  <aside class="sidebar">
+    <div class="sb-section">Vendor</div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="vShowPanel('v-dashboard')"><span class="si">📊</span> Dashboard</div>
+      <div class="sb-item" onclick="vShowPanel('v-contracts')"><span class="si">📄</span> My Contracts <span class="sb-badge" id="v-contracts-badge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="vShowPanel('v-new-contract')"><span class="si">➕</span> Submit New Contract</div>
+      <div class="sb-item" onclick="vShowPanel('v-registration')"><span class="si">🏢</span> Registration Status</div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-footer">
+      <div style="font-size:10px;color:var(--muted);text-align:center">Live sync · Auto-refresh 30s</div>
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--green);margin:6px auto 0;"></div>
+    </div>
+  </aside>
+  <main class="main">
+    <!-- Vendor Dashboard -->
+    <div class="sub-panel active" id="v-dashboard">
+      <div class="page-hdr">
+        <div><div class="ph-title">Vendor Dashboard</div><div class="ph-sub">Your contracts and registration overview</div></div>
+        <div class="ph-actions"><button class="btn btn-teal btn-sm" onclick="vShowPanel('v-new-contract')">+ Submit Contract</button></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="v-stat-total">0</div><div class="stat-lbl">Total Submitted</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="v-stat-pending">0</div><div class="stat-lbl">Pending Review</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--purple)" id="v-stat-action">0</div><div class="stat-lbl">Action Required</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="v-stat-complete">0</div><div class="stat-lbl">Completed</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-icon" style="background:var(--amber-light)">⏳</div><div><div class="card-title">Action Required</div><div class="card-sub">Items requiring your attention</div></div></div>
+        <div class="card-body" style="padding:0"><div id="v-action-list"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-icon" style="background:var(--blue-light)">📄</div><div><div class="card-title">Recent Contracts</div></div></div>
+        <div class="card-body" style="padding:0"><div id="v-recent-list"></div></div>
+      </div>
+    </div>
+    <!-- Vendor Contracts -->
+    <div class="sub-panel" id="v-contracts">
+      <div class="page-hdr">
+        <div><div class="ph-title">My Contracts</div><div class="ph-sub">All contract submissions</div></div>
+        <div class="ph-actions"><button class="btn btn-teal btn-sm" onclick="vShowPanel('v-new-contract')">+ Submit New</button></div>
+      </div>
+      <div class="filters-bar">
+        <select class="filter-sel" id="vc-status" onchange="renderVendorContracts()"><option value="">All Status</option><option value="submitted">Submitted</option><option value="review">Under Review</option><option value="legal">Legal Review</option><option value="action">Action Required</option><option value="approved">Approved</option></select>
+        <input class="filter-search" type="text" id="vc-search" placeholder="Search contracts…" oninput="renderVendorContracts()">
+      </div>
+      <div class="card" style="padding:0"><div id="v-contracts-list"></div></div>
+    </div>
+    <!-- Submit New Contract -->
+    <div class="sub-panel" id="v-new-contract">
+      <div class="page-hdr"><div><div class="ph-title">Submit New Contract</div><div class="ph-sub">Upload contract for Procurement review</div></div></div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-icon" style="background:var(--teal-light)">📄</div><div><div class="card-title">Contract Details</div></div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field span2"><label>Contract Title <span class="req">*</span></label><input type="text" id="nc-title" placeholder="e.g. Annual Software Maintenance Agreement"></div>
+            <div class="field"><label>Contract Type <span class="req">*</span></label><select id="nc-type"><option value="">— Select —</option><option>Renewal</option><option>New Contract</option><option>Amendment</option><option>SLA Agreement</option><option>NDA</option><option>MSA</option><option>SOW</option></select></div>
+            <div class="field"><label>Contract Value (AED)</label><input type="number" id="nc-value" placeholder="0"></div>
+            <div class="field"><label>Start Date</label><input type="date" id="nc-start"></div>
+            <div class="field"><label>End Date / Expiry</label><input type="date" id="nc-end"></div>
+            <div class="field"><label>Vendor Company Name <span class="req">*</span></label><input type="text" id="nc-vendor" placeholder="Your company name"></div>
+            <div class="field"><label>Contact Email <span class="req">*</span></label><input type="email" id="nc-email" placeholder="your@company.com"></div>
+            <div class="field span2"><label>Description / Scope of Work</label><textarea id="nc-desc" placeholder="Brief description of the contract scope…"></textarea></div>
+          </div>
+          <div class="sec-div">Upload Contract Document</div>
+          <div class="info-box ib-info"><span class="ib-i">ℹ</span><span>Upload the contract document (Word .docx preferred for redlining, PDF also accepted). Procurement will review and send to Legal if required.</span></div>
+          <div class="upload-zone" onclick="trigUpload('nc-file')">
+            <input type="file" id="nc-file" accept=".docx,.pdf" onchange="handleContractUpload('nc', this)">
+            <div class="upload-zone-icon">📄</div>
+            <div class="upload-zone-text"><strong>Click to upload contract</strong><br>Word (.docx) or PDF · Max 20MB</div>
+          </div>
+          <div id="nc-file-display"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="submitContract()">Submit to Procurement →</button>
+            <button class="btn btn-secondary" onclick="vShowPanel('v-dashboard')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Registration Status -->
+    <div class="sub-panel" id="v-registration">
+      <div class="page-hdr"><div><div class="ph-title">Registration Status</div><div class="ph-sub">Your vendor registration with Wio</div></div></div>
+      <div class="card">
+        <div class="card-body">
+          <div class="info-box ib-info"><span class="ib-i">🔗</span><span>To register as a new vendor or check your registration status, use the <strong>Vendor Enrolment Portal</strong>.</span></div>
+          <a href="https://cyriac99.github.io/Vendor-Enrolment-Test/wio_vendor_portal.html" target="_blank" class="btn btn-teal">Open Vendor Enrolment Portal ↗</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── PROCUREMENT VIEW ── -->
+<div id="view-procurement" style="display:none;width:100%">
+  <aside class="sidebar">
+    <div class="sb-section">Procurement</div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="pShowPanel('p-dashboard')"><span class="si">📊</span> Dashboard</div>
+      <div class="sb-item" onclick="pShowPanel('p-priority')"><span class="si">🎯</span> Contract Priority <span class="sb-badge" id="p-priority-badge">!</span></div>
+      <div class="sb-item" onclick="pShowPanel('p-queue')"><span class="si">📥</span> Review Queue <span class="sb-badge" id="p-queue-badge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="pShowPanel('p-new')"><span class="si">➕</span> Initiate Review</div>
+      <div class="sb-item" onclick="pShowPanel('p-all')"><span class="si">📋</span> All Contracts</div>
+      <div class="sb-item" onclick="pShowPanel('p-reports')"><span class="si">📈</span> Reports</div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-footer">
+      <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="refreshAll()">↻ Refresh</button>
+    </div>
+  </aside>
+  <main class="main">
+    <!-- Procurement Dashboard -->
+    <div class="sub-panel active" id="p-dashboard">
+      <div class="page-hdr">
+        <div><div class="ph-title">Procurement Dashboard</div><div class="ph-sub">Contract management overview</div></div>
+        <div class="ph-actions">
+          <button class="btn btn-secondary btn-sm" onclick="refreshAll()">↻ Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="pShowPanel('p-new')">+ Initiate Review</button>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="p-stat-total">0</div><div class="stat-lbl">Total Contracts</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="p-stat-p1">0</div><div class="stat-lbl">Sign TODAY (P1)</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="p-stat-review">0</div><div class="stat-lbl">Pending Review</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="p-stat-complete">0</div><div class="stat-lbl">Completed</div></div>
+      </div>
+      <div class="workflow-steps" id="p-workflow-steps">
+        <div class="ws-step done" onclick="pShowPanel('p-queue')"><div class="ws-num">1</div><span>Procurement<br>Initiates</span></div>
+        <div class="ws-step done" onclick="pShowPanel('p-queue')"><div class="ws-num">2</div><span>Vendor<br>Submits</span></div>
+        <div class="ws-step active" onclick="pShowPanel('p-queue')"><div class="ws-num">3</div><span>Legal +<br>Responsible</span></div>
+        <div class="ws-step locked"><div class="ws-num">4</div><span>Review &<br>Sign-off</span></div>
+        <div class="ws-step locked"><div class="ws-num">5</div><span>DocuSign<br>Complete</span></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-icon" style="background:var(--red-light)">🔴</div><div><div class="card-title">Sign TODAY — Priority 1</div><div class="card-sub">Contracts requiring immediate action</div></div></div>
+        <div class="card-body" style="padding:0"><div id="p-p1-list"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-icon" style="background:var(--amber-light)">📥</div><div><div class="card-title">Vendor Submissions Awaiting Review</div></div></div>
+        <div class="card-body" style="padding:0"><div id="p-incoming-list"></div></div>
+      </div>
+    </div>
+    <!-- Contract Priority List -->
+    <div class="sub-panel" id="p-priority">
+      <div class="page-hdr">
+        <div><div class="ph-title">Contract Priority List</div><div class="ph-sub">All contracts by priority for CFO & Legal review</div></div>
+        <div class="ph-actions">
+          <button class="btn btn-secondary btn-sm" onclick="exportPriorityCSV()">↓ Export CSV</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddContractModal()">+ Add Contract</button>
+        </div>
+      </div>
+      <div class="filters-bar">
+        <div class="pill-filter active" onclick="filterPriority(0,this)">All</div>
+        <div class="pill-filter" onclick="filterPriority(1,this)" style="border-color:#f5b8ae;color:#9b2012;background:#fff0ee">🔴 P1 Today</div>
+        <div class="pill-filter" onclick="filterPriority(2,this)" style="border-color:#f5d580;color:#7a4f00;background:#fff8e6">🟡 P2 This Week</div>
+        <div class="pill-filter" onclick="filterPriority(3,this)" style="border-color:#b3c9f5;color:#1a3a7a;background:#eef4ff">🔵 P3 Next Week</div>
+        <div class="pill-filter" onclick="filterPriority(4,this)" style="border-color:#d8d4cc;color:#50504a;background:#f2f2f0">⚪ P4 Later</div>
+        <div class="filter-sep" style="width:1px;height:24px;background:var(--border);"></div>
+        <select class="filter-sel" id="pr-status" onchange="renderPriorityList()"><option value="">All Status</option><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="ONHOLD">On Hold</option></select>
+        <input class="filter-search" type="text" id="pr-search" placeholder="Search vendor…" oninput="renderPriorityList()">
+      </div>
+      <div id="priority-list-container"></div>
+    </div>
+    <!-- Review Queue -->
+    <div class="sub-panel" id="p-queue">
+      <div class="page-hdr">
+        <div><div class="ph-title">Review Queue</div><div class="ph-sub">Vendor submissions awaiting procurement action</div></div>
+      </div>
+      <div class="filters-bar">
+        <select class="filter-sel" id="pq-status" onchange="renderProcQueue()"><option value="">All Status</option><option value="submitted">Submitted</option><option value="review">Under Review</option></select>
+        <input class="filter-search" type="text" id="pq-search" placeholder="Search…" oninput="renderProcQueue()">
+      </div>
+      <div class="card" style="padding:0"><div id="p-queue-list"></div></div>
+    </div>
+    <!-- Initiate New Review -->
+    <div class="sub-panel" id="p-new">
+      <div class="page-hdr"><div><div class="ph-title">Initiate Contract Review</div><div class="ph-sub">Start a new contract review process</div></div></div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-icon" style="background:var(--blue-light)">📋</div><div><div class="card-title">Contract Details</div></div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field span2"><label>Contract Title <span class="req">*</span></label><input type="text" id="pn-title" placeholder="e.g. Sprinklr Annual Renewal"></div>
+            <div class="field"><label>Vendor / Company <span class="req">*</span></label><input type="text" id="pn-vendor" placeholder="Vendor name"></div>
+            <div class="field"><label>Vendor Email</label><input type="email" id="pn-email"></div>
+            <div class="field"><label>Contract Type</label><select id="pn-type"><option>Renewal</option><option>New Contract</option><option>Amendment</option><option>SLA Agreement</option><option>NDA</option><option>MSA</option><option>SOW</option></select></div>
+            <div class="field"><label>Priority</label><select id="pn-priority"><option value="1">P1 — Sign TODAY</option><option value="2" selected>P2 — This Week</option><option value="3">P3 — Next Week</option><option value="4">P4 — 2+ Weeks</option></select></div>
+            <div class="field"><label>Contract Value (AED)</label><input type="number" id="pn-value"></div>
+            <div class="field"><label>Due Date</label><input type="date" id="pn-due"></div>
+            <div class="field"><label>Procurement Officer</label><input type="text" id="pn-proc" placeholder="Your name"></div>
+            <div class="field"><label>Legal Reviewer</label><input type="text" id="pn-legal" placeholder="Legal team member"></div>
+            <div class="field"><label>Responsible Person</label><input type="text" id="pn-resp" placeholder="Department head / ExCo"></div>
+            <div class="field"><label>Responsible Email</label><input type="email" id="pn-resp-email"></div>
+            <div class="field span2"><label>Notes / Context</label><textarea id="pn-notes" placeholder="Brief description of the contract…"></textarea></div>
+          </div>
+          <div class="sec-div">Upload Contract Document (Optional)</div>
+          <div class="upload-zone" onclick="trigUpload('pn-file')">
+            <input type="file" id="pn-file" accept=".docx,.pdf" onchange="handleContractUpload('pn', this)">
+            <div class="upload-zone-icon">📄</div>
+            <div class="upload-zone-text"><strong>Click to upload</strong> contract document (.docx or PDF)</div>
+          </div>
+          <div id="pn-file-display"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="initiateProcReview()">Initiate Review & Notify Parties →</button>
+            <button class="btn btn-secondary" onclick="pShowPanel('p-dashboard')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- All Contracts -->
+    <div class="sub-panel" id="p-all">
+      <div class="page-hdr"><div><div class="ph-title">All Contracts</div></div>
+        <div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="exportContractsCSV()">↓ Export CSV</button></div>
+      </div>
+      <div class="filters-bar">
+        <select class="filter-sel" id="pa-status" onchange="renderAllContracts()"><option value="">All Status</option><option value="submitted">Submitted</option><option value="review">Under Review</option><option value="legal">Legal Review</option><option value="responsible">Responsible Review</option><option value="approved">Approved</option><option value="docusign">DocuSign</option><option value="completed">Completed</option></select>
+        <select class="filter-sel" id="pa-priority" onchange="renderAllContracts()"><option value="">All Priorities</option><option value="1">P1</option><option value="2">P2</option><option value="3">P3</option><option value="4">P4</option></select>
+        <input class="filter-search" type="text" id="pa-search" placeholder="Search…" oninput="renderAllContracts()">
+      </div>
+      <div class="card" style="padding:0"><div id="p-all-list"></div></div>
+    </div>
+    <!-- Reports -->
+    <div class="sub-panel" id="p-reports">
+      <div class="page-hdr">
+        <div><div class="ph-title">Reports & Analytics</div></div>
+        <div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="exportContractsCSV()">↓ Export All CSV</button></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="rp-total">0</div><div class="stat-lbl">Total Contracts</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="rp-complete">0</div><div class="stat-lbl">Completed</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="rp-open">0</div><div class="stat-lbl">In Progress</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--blue-mid)" id="rp-value">0</div><div class="stat-lbl">Total Value (AED M)</div></div>
+      </div>
+      <div class="card" style="padding:0"><div id="p-reports-list"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- ── LEGAL VIEW ── -->
+<div id="view-legal" style="display:none;width:100%">
+  <aside class="sidebar">
+    <div class="sb-section">Legal</div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="lShowPanel('l-queue')"><span class="si">📥</span> Review Queue <span class="sb-badge" id="l-queue-badge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="lShowPanel('l-all')"><span class="si">📋</span> All Assigned</div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="sub-panel active" id="l-queue">
+      <div class="page-hdr">
+        <div><div class="ph-title">Legal Review Queue</div><div class="ph-sub">Contracts pending your legal review and redlining</div></div>
+        <div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="refreshAll()">↻ Refresh</button></div>
+      </div>
+      <div class="card" style="padding:0"><div id="l-queue-list"></div></div>
+    </div>
+    <div class="sub-panel" id="l-all">
+      <div class="page-hdr"><div><div class="ph-title">All Assigned Contracts</div></div></div>
+      <div class="card" style="padding:0"><div id="l-all-list"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- ── RESPONSIBLE VIEW ── -->
+<div id="view-responsible" style="display:none;width:100%">
+  <aside class="sidebar">
+    <div class="sb-section">Responsible Person</div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="rShowPanel('r-queue')"><span class="si">📥</span> Pending Sign-off <span class="sb-badge" id="r-queue-badge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="rShowPanel('r-all')"><span class="si">📋</span> All Assigned</div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="sub-panel active" id="r-queue">
+      <div class="page-hdr">
+        <div><div class="ph-title">Pending Sign-off</div><div class="ph-sub">Contracts requiring your approval — scope, IT SLA, and final sign-off</div></div>
+        <div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="refreshAll()">↻ Refresh</button></div>
+      </div>
+      <div class="card" style="padding:0"><div id="r-queue-list"></div></div>
+    </div>
+    <div class="sub-panel" id="r-all">
+      <div class="page-hdr"><div><div class="ph-title">All Assigned Contracts</div></div></div>
+      <div class="card" style="padding:0"><div id="r-all-list"></div></div>
+    </div>
+  </main>
+</div>
+
+</div><!-- end shell -->
+
+<!-- ════ CONTRACT DETAIL DRAWER ════ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="contract-drawer">
+  <div class="drawer-hdr">
+    <div>
+      <div class="drawer-title" id="drawer-title">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px" id="drawer-ref">—</div>
+    </div>
+    <div id="drawer-chip" style="margin-left:auto;margin-right:10px"></div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-footer" id="drawer-footer"></div>
+</div>
+
+<!-- ════ REDLINE MODAL ════ -->
+<div class="modal-overlay" id="redline-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">⚖️ Contract Redlining & AI Analysis</div>
+      <button class="modal-close" onclick="closeRedlineModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box ib-info"><span class="ib-i">ℹ</span><span>Upload the original contract and your redlined version. Claude AI will compare both documents and produce a clear summary of all additions, removals, and modifications — visible to all parties.</span></div>
+      <div class="sec-div">Original Contract</div>
+      <div class="upload-zone" onclick="trigUpload('rl-original')">
+        <input type="file" id="rl-original" accept=".docx,.pdf" onchange="handleRedlineUpload('original', this)">
+        <div class="upload-zone-icon">📄</div>
+        <div class="upload-zone-text"><strong>Upload original contract</strong> · .docx or PDF</div>
+      </div>
+      <div id="rl-original-display"></div>
+      <div class="sec-div">Redlined / Amended Version</div>
+      <div class="upload-zone" onclick="trigUpload('rl-redlined')">
+        <input type="file" id="rl-redlined" accept=".docx,.pdf" onchange="handleRedlineUpload('redlined', this)">
+        <div class="upload-zone-icon">📝</div>
+        <div class="upload-zone-text"><strong>Upload redlined version</strong> · .docx with tracked changes or PDF</div>
+      </div>
+      <div id="rl-redlined-display"></div>
+      <div class="sec-div">API Key for AI Analysis</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="password" id="rl-api-key" placeholder="sk-ant-api03-…" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:11px;background:var(--surface)" oninput="rlValidateKey(this.value)">
+        <span id="rl-key-status" style="font-size:18px">⬜</span>
+      </div>
+      <div id="rl-progress" style="display:none;margin-top:16px">
+        <div class="ai-reading">
+          <div style="font-size:24px;margin-bottom:8px" class="loading-spin">⚙️</div>
+          <div style="font-size:13px;font-weight:600" id="rl-prog-text">Reading documents…</div>
+          <div class="ai-prog"><div class="ai-prog-fill" id="rl-prog-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeRedlineModal()">Cancel</button>
+      <button class="btn btn-purple" id="rl-run-btn" onclick="runRedlineAnalysis()" disabled>⚖️ Run AI Redline Analysis</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ADD CONTRACT MODAL ════ -->
+<div class="modal-overlay" id="add-contract-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Add Contract to Priority List</div>
+      <button class="modal-close" onclick="document.getElementById('add-contract-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>Vendor <span class="req">*</span></label><input type="text" id="ac-vendor"></div>
+        <div class="field"><label>Priority <span class="req">*</span></label><select id="ac-priority"><option value="1">P1 — Sign TODAY</option><option value="2" selected>P2 — This Week</option><option value="3">P3 — Next Week</option><option value="4">P4 — 2+ Weeks</option></select></div>
+        <div class="field span2"><label>Description</label><input type="text" id="ac-desc"></div>
+        <div class="field"><label>TCV (AED)</label><input type="number" id="ac-tcv"></div>
+        <div class="field"><label>Status</label><select id="ac-status"><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="ONHOLD">On Hold</option></select></div>
+        <div class="field"><label>Procurement Officer</label><input type="text" id="ac-proc"></div>
+        <div class="field"><label>ExCo Approver</label><input type="text" id="ac-exco"></div>
+        <div class="field"><label>Responsible</label><input type="text" id="ac-resp"></div>
+        <div class="field"><label>Legal</label><input type="text" id="ac-legal"></div>
+        <div class="field span2"><label>Notes</label><textarea id="ac-notes" style="min-height:56px"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="addPriorityContract()">Add Contract</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('add-contract-modal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════════════════════════════════════
+const SB_URL = 'https://amtqlhqmcpnrfhvrhbqj.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtdHFsaHFtY3BucmZodnJoYnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNDk2NjgsImV4cCI6MjA5NDkyNTY2OH0.lQH5Syx2D1Xk-n1pHpL_V4QgRv1Y_qKl2XyF3CQ681o';
+const SB_HDR = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
+
+function sj(v){ try{return JSON.parse(v)}catch(e){return null} }
+
+async function sbFetch(table, query=''){
+  try{
+    const r = await fetch(SB_URL+'/rest/v1/'+table+query,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(!r.ok) throw new Error(await r.text());
+    return await r.json();
+  }catch(e){console.error('SB fetch:',e);return [];}
+}
+async function sbUpsert(table, row){
+  try{
+    const r = await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:{...SB_HDR,'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(row)});
+    if(!r.ok){const e=await r.text();throw new Error(e);}
+    return await r.json();
+  }catch(e){console.error('SB upsert:',e);toast('⚠ Sync error: '+e.message.slice(0,60));return null;}
+}
+async function sbPatch(table, col, val, row){
+  try{
+    const r = await fetch(SB_URL+'/rest/v1/'+table+'?'+col+'=eq.'+encodeURIComponent(val),{method:'PATCH',headers:SB_HDR,body:JSON.stringify(row)});
+    if(!r.ok) throw new Error(await r.text());
+    return await r.json();
+  }catch(e){console.error('SB patch:',e);toast('⚠ Update error: '+e.message.slice(0,60));return null;}
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════
+let role = null;
+let _contracts = []; // live cache
+let _priorityData = []; // priority list (local + from rawData)
+let currentContractRef = null;
+let rlOrigFile = null, rlRedFile = null;
+let ncUploadedFile = null, pnUploadedFile = null;
+let priorityFilter = 0;
+
+// Load priority list from existing data
+const rawData = [
+  [2,"ADNIC",1,"Insurance against Loans",450000,"No","","CLOSED","Abhijith","Prateek","Ankit Agrawal","","","Policy document to be shared, Wio docs requested"],
+  [59,"LNRS",1,"",171383.3,"Yes","","CLOSED","Noora","Prateek","Gopal","Assigned","","Prakash needs to sign"],
+  [100,"Whoop",1,"Ramadan gifts",999630,"Yes","","CLOSED","Noora","Amina","Shem","","",""],
+  [143,"Databricks",1,"Renewal","","","","OPEN","Abhijith","Yannick","Jeaun","","",""],
+  [1,"Sprinklr",2,"Marketing Customer Experience Tool Renewal",195650,"","2026-03-17","CLOSED","Cyriac","Amina","Sukriti","Divyaa","Sprinklr has shared the updated order form on 17th March 2026 and has been submitted for signatures","Pending Signature"],
+  [3,"ARN",2,"ARN Quote comparison",3202000,"No","2026-01-27","OPEN","Cyriac","Amina","Jekaterina","Divyaa","DocuSign","CFO signature pending"],
+  [5,"Al Rizq",2,"AUH office - Supply and installation of external signage",176000,"Yes","","CLOSED","Evita/Burhan","Prakash","Burhan","Sally","","Jay has confirmed the proposed design option with the larger signage size"],
+  [6,"Al Rizq",2,"EXPO Office - Signages",130000,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","Julian","","Agreement under sign off"],
+  [7,"CSQ-SEREX AOR",2,"AD office AOR - Authorities approval",170000,"Yes","","CLOSED","Evita/Burhan","Prakash","Burhan","Sally","","Agreement signed- to be moved under VEDRA"],
+  [8,"ARCO",2,"AD office - Contractor CONSTRUCTION (inc staircase)",18000000,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","Sally","Pending with Procurement","Under signature with Jay"],
+  [9,"ARCO",2,"LL Design review fee",177000,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","","","Under signature- Part of Arco main scope 18M"],
+  [13,"Dicetek",2,"Renewal 20 Compliance Resources",1800000,"No","2026-01-27","CLOSED","Cyriac","Hanan","Mustafa","Divyaa","Under signature","Pending CFO signature"],
+  [14,"Appsflyer",2,"Renewal",187297.5,"","","OPEN","Cyriac","Amina","Jekaterina","Divyaa","DocuSign","CFO signature pending"],
+  [15,"Veerloop",2,"Renewal",17815,"Yes","","OPEN","Noora","Prateek","Ankit","Divyaa","Noora to confirm Exco approval to proceed","waiting for the vendor to send the revised order"],
+  [16,"Perfios",2,"Renewal",1000000,"No","2026-02-27","CLOSED","Abhijith","Faisal","Ankit","Divyaa","legal comments sent","Still waiting for updated contract from vendor"],
+  [17,"Aramex",2,"Aramex Addendum new scope of work","","","","CLOSED","Karthick","Andre","Tintu","Julian","","Addendum#12 sent to ops for review"],
+  [18,"Sana",2,"1 year contract",277641,"Yes","","CLOSED","Noora","Mona","Sunaina","Divyaa","Under signature","All terms are approved, under signature"],
+  [21,"Data Direct",2,"Co-working space FUJ",936000,"Yes","","CLOSED","Evita/Burhan","Prakash","Burhan","Sally","","With Prakash for sign off"],
+  [25,"Dicetek",2,"KYC EDD Team 10 resources Renewal",390000,"No","2026-03-18","OPEN","Cyriac","Prateek","Vidya","Divyaa","DocuSign","Pending Signature on Docusign"],
+  [26,"ARN",2,"one-week competition across Virgin, City and Al Arabiya",400000,"Yes","","CLOSED","Noora","Amina","Andrea Diaz","Divyaa","Legal Comments sent","3 stations: arabian, city and virgin"],
+  [27,"EFR",2,"Renewal",4000000,"No","2026-02-11","CLOSED","Abhijith","Faisal","Jo","","","With Gaurav for signature"],
+  [29,"Mambu",2,"De-Fi Mambu - 75k Accounts-Separate Instance",460000,"","TBD","OPEN","Karthick","Gaurav","Enes Turk","Divyaa","under signature","JP Approved. Order form sent to Defi team"],
+  [35,"Liink",2,"Bene Pre validation",256900,"No","","CLOSED","Abhijith","Prateek","Gopal","","",""],
+  [40,"Aramex",2,"Amended and restated agreement for the extension",900000,"","2026-03-18","OPEN","Cyriac","Andre","Tintu/Mithson","Divyaa","Documents awaited","Pending Review with Aramex"],
+  [43,"Facstet",2,"Commodities (to trade Gold and Silver)",13212,"Yes","","CLOSED","Evita","Gaurav","Sudha","","","Contract with legal"],
+  [52,"Gtreasury",2,"Termsheet",73400,"Yes","","CLOSED","Cyriac","Prakash","Ulvi","Not assigned to Legal","","Pending legal to initiate on Docusign"],
+  [54,"Dicetek",2,"Renewal 10 KYC",390000,"No","","CLOSED","Cyriac","Hanan","?","Not assigned to Legal","",""],
+  [55,"Hacken",2,"Cybersecurity Certification Wio Security Regulator on Digital Assets",95485,"Yes","","CLOSED","Cyriac","Gaurav","Luciano","Divyaa","DocuSign",""],
+  [56,"BCG",2,"Treasury optimisation consultancy","","No","","CLOSED","Evita","Prakash","Sunil","","","Under signature"],
+  [64,"MBG",2,"Extension",18000,"","","CLOSED","Noora","Prakash","Emad","Assigned","","on docusign, emad needs to sign then prakash"],
+  [74,"Samsung Pay",2,"Integration with Samsung Pay for acquiring","","No","","CLOSED","Abhijith","Yatin","Javed","Julian","",""],
+  [75,"Nagarro",2,"SOW for adhoc additional support","","No","","OPEN","Cyriac","Yannick","Aishwarya","Divya","",""],
+  [83,"ClearGrid",2,"Debts collection competitor","","Yes","","OPEN","Evita","Faisal","Jitesh","Not assigned","","Under signature with Prakash"],
+  [84,"Passfort",2,"Compliance system","","No","","OPEN","Evita","Andre","Tintu","Not assigned","","Under signature"],
+  [85,"Al Rawadh",2,"AD Office - Contract JOINERY",8356297,"No","","OPEN","Evita/Burhan","Prakash","Burhan","","","Approved by Jay, awaiting contract draft from vendor"],
+  [87,"Elevenish",2,"","","Yes","","CLOSED","Noora","Amina","Zayed","Assigned","",""],
+  [88,"Trescon",2,"","","Yes","","CLOSED","Noora","Amina","Zayed","Assigned","",""],
+  [91,"ARCO",2,"Undertaking Letter for Structural Modification",0,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","Divya","","Undertaking under review with Legal"],
+  [92,"Chelsea Greens",2,"AD FF- Work Stations / Loose Furniture / Soft seating",5827620,"Yes","","CLOSED","Evita/Burhan","Prakash","Burhan","Divya","","LOA signed, Payment initiated"],
+  [111,"Browserstack",2,"WIO app testing tool",6000,"No","","CLOSED","Mohamed","Yannick","Balachander","Divyaa","signed",""],
+  [122,"Teramind",2,"Monitoring tool licenses",23000,"No","","OPEN","Mohamed","Yannick","Marco","Divyaa","","Awaiting legal response"],
+  [128,"Kroll",2,"Consultancy - Board and Exco Training and FATF Evaluation Preparation",100925,"No","","CLOSED","Evita","Hanan","Rabee","Sally","","under signature with Prakash"],
+  [129,"Kroll",2,"Consultancy - FCC Gap assessment",313785,"No","","CLOSED","Evita","Hanan","Rabee","Sally","","under signature with Prakash"],
+  [130,"Kroll",2,"Consultancy - Independent Validation of CBUAE Internal Audit",27525,"No","","CLOSED","Evita","Ali","Marco","Sally","","Contract with Legal"],
+  [131,"Zamp",2,"Migration BCP - Europe",36700,"No","","CLOSED","Abhijith","Faisal","Jo","","",""],
+  [132,"Austria Card",2,"New agreement with Turkey entity for Burgopack",47710,"No","","OPEN","Abhijith","Andre","Mithson","","",""],
+  [145,"Zimperium",2,"App Security (Through helpAG)","","","","CLOSED","Abhijith","Yannick","Frentzen","","",""],
+  [146,"Multiplier",2,"EOR Platform","","","","OPEN","Abhijith","Prakash","Chakz","","",""],
+  [149,"Alibaba",2,"Cloud MSA for AI platform and AI Agent","","","","OPEN","Abhijith","Yannick","Aishwarya/Ayush","","",""],
+  [152,"Transguard",2,"Addendum for Pick up and drop service from LULU","","","","OPEN","Evita","Andre","Nehad","","","Negotiations finalized, addendum to be signed"],
+  [156,"Airship",2,"Termination Notice","","No","","CLOSED","Cyriac","Prateek","Ankit Agrawl","Julian","",""],
+  [158,"ARCO",2,"Consent of assignment","","","","OPEN","Evita","Prakash","Evita","","","To be signed"],
+  [161,"Alphadata",2,"IT Network, CCTV, ACS",1600000,"","","OPEN","Abhijith","Yannick","Bhuvanesh","","","Currently request CEO approval, then release LOA"],
+  [162,"Alpha Audio",2,"Audio Visual",750000,"","","OPEN","Abhijith","Yannick","Mohamed","","","Currently request CEO approval, then release LOA"],
+  [20,"Al Hilal Properties",3,"FUJ Office - Lease Al Hilal Business tower - all 9th Floor",350000,"Yes","","ONHOLD","Evita/Burhan","Prakash","Burhan","Sally","","Trade license for FUJ in progress"],
+  [24,"Mambu",3,"CR for Islamic Banking (Shari'ah Deposit + 200k active accounts)",1500000,"No","TBD","CLOSED","Karthick","Yannick","Srikanth","Not assigned to Legal","","waiting for JP approval"],
+  [42,"Aldar",3,"AD Office - Addendum for Marketing fees on WIO signage",6000000,"No","","OPEN","Evita/Burhan","Prakash","Burhan","Not assigned to Legal","","Under discussion with Aldar"],
+  [44,"Edge Technology",3,"TAMM 1.1 AI",500000,"","","OPEN","Karthick","Yannick","Ankit Bansal","TBD","","Phase 1.1 at AED 500k, need Jay approval"],
+  [47,"Feedzai",3,"Digital trust slab renegotiation","","No","","CLOSED","Abhijith","Faisal","Jo and Ashwani","","","Awaiting confirmation from Jo"],
+  [48,"Etihad",3,"5th floor lease extension",2750000,"No","2026-07-06","OPEN","Evita/Burhan","Prakash","Karthick/Burhan","Julian","","Extension period to be confirmed"],
+  [49,"StausNeo",3,"Tech & Non Tech Admin fee updated SOW","","No","","OPEN","Karthick","TBD","Chaks","Cregor","","waiting for the final SOW and feedback from Chaks"],
+  [51,"Image Info System",3,"VAT System AMC for 6 months",19000,"No","2026-03-28","OPEN","Karthick","Prakash","Ghulam/Sajid","Naima","","On docusign. Sajid to have discussion with PS"],
+  [57,"Alibaba",3,"Agentar platform for Transaction screening",1400000,"No","","OPEN","Karthick","Yatin","Ayush Durga / Rodrigo","Sally","","SOW review in progress"],
+  [58,"Guidde",3,"Renewal",14725,"","","OPEN","Noora","Andre","Alan","","","Negotiating with vendor"],
+  [62,"Forty Eight Marketing",3,"YT influencers",70000,"No","","OPEN","Noora","Prateek","Valentina","","","contract sent to legal"],
+  [63,"Etisalat",3,"International SMS for non-resident","","No","","CLOSED","Karthick","Yannick","Ankit Agarwal","Not assigned to Legal","","waiting for the proposal"],
+  [65,"Jocata",3,"Price Revision","","No","","CLOSED","Abhijith","Prateek","Ankita","Sally","",""],
+  [66,"KPMG",3,"Operational Resilience Consultant",750000,"No","","ONHOLD","Cyriac","Faisal","Prasanna","Not assigned to Legal","","Pending CEO approval"],
+  [67,"Dicetek",3,"New to Country 1 Resources",78000,"No","NA","CLOSED","Cyriac","Andre","Uthaiah","Not assigned to Legal","","Pending CFO signature"],
+  [68,"Mindmap",3,"Mindmap AMC",35000,"","","OPEN","Karthick","Andre","Upasana","Divyaa","Legal review sent","SOW under review"],
+  [71,"CyberArrow",3,"CyberArrow GRC tool renewal",105000,"","","OPEN","Karthick","Yannick","Seema","NA","","waiting for Seema & Yannick sign off"],
+  [73,"RFI Global",3,"Survey for SME",91750,"No","","CLOSED","Abhijith","Arnold","Arnold","Cregor","",""],
+  [75,"Jocata",3,"Resource renewal","","No","","CLOSED","Abhijith","Prateek","Ankita","","",""],
+  [77,"Digital Rocket",3,"Digital Marketing Agency Replacement",220000,"No","","ONHOLD","Cyriac","Amina","Andrea Diaz","Not assigned to Legal","","Pending CEO clearance"],
+  [79,"AiPrise",3,"POC Corporate Website Scoring Risk Scoring",0,"NA","","CLOSED","Cyriac","Faisal","Alexander Puchkov","Divyaa","legal advice given- POC letter to be signed","Pending Legal Review"],
+  [80,"BitPanda",3,"Crypto Partner",550000,"No","","CLOSED","Cyriac","Gaurav","Mohammad","","","Risk Assessment pending, Contract review ongoing, CEO approval received"],
+  [81,"JuicyScore",3,"POC Device Based Credit and Fraud Risk Assessment","","NA","","ONHOLD","Cyriac","Faisal","Alexander Puchkov","Divyaa","DocuSign","pending Faisal signatures"],
+  [82,"RiskSeal",3,"POC Alternative Data Driven Credit risk Assessment","","NA","","CLOSED","Cyriac","Faisal","Alexander Puchkov","Divyaa","legal advice given- POC letter to be signed","Pending to be updated by Alex"],
+  [89,"21 FM",3,"Expo office - AMC renewal for Office boy and cleaning services",146160,"Yes","","OPEN","Evita/Burhan","Prakash","Burhan","Divya","","Renewal contract under review with legal"],
+  [90,"EFS",3,"AD Office - AMC Renewal for office boy services",87960,"Yes","","OPEN","Evita/Burhan","Prakash","Burhan","Divya","","Under signature with Prakash in docusign"],
+  [113,"DMCC",3,"Commodity Broker Platform","","No","","OPEN","Abhijith","Arnold","Arnold","","","Jay approved, need to sign the agreement"],
+  [115,"Figma Renewal",3,"Design Tool renewal",201987.5,"No","2026-02-11","CLOSED","Cyriac","Burcin","Todd","Not assigned to Legal","","Pending CFO signature"],
+  [117,"Trustfull",3,"POC Alternative Data Driven Credit risk Assessment","","NA","","CLOSED","Cyriac","Faisal","Alexander Puchkov","Divyaa","legal comments sent","Pending Signature with Ashwani"],
+  [121,"HemoData",3,"Data Protection Consultant",327337.5,"No","NA","ONHOLD","Cyriac","Faisal","Anup","Not assigned to Legal","","Pending confirmation from CRO"],
+  [123,"Moodys",3,"Credit Analysis Tool (Moodys and S&P)",2203500,"No","NA","OPEN","Cyriac","Faisal","Asanga","Not Assigned to Legal","","Online terms provided. Moodys to revise the contract"],
+  [126,"Seon",3,"POC Alternative Data Driven Credit risk Assessment",0,"NA","","OPEN","Cyriac","Faisal","Alexander Puchkov","Divyaa","legal comments on DPA sent on 22nd April","pending final version from SEON"],
+  [134,"Concentrix",3,"Wio Securities MSA and SOW",360000,"No","NA","OPEN","Cyriac","Gaurav","Nathan","Julian/Divyaa","comments sent to cyriac","legal review comments sent on 20th April"],
+  [137,"Magna → Initiative",3,"Digital marketing agency Novation from Magna to Initiative",0,"NA","","OPEN","Cyriac","Prateek","Junaid","Divya","","Review ongoing"],
+  [142,"Veefin",3,"Loan management system","","","","OPEN","Abhijith","Faisal","Yatin/AAA","","",""],
+  [153,"Lulu",3,"Cheque drop and cash deposit","","","","OPEN","Evita","Andre","Nehad","","","Negotiations in progress - tiers too high"],
+  [160,"Evaluagent",3,"Renewal QA FO Agent Evaluation Tool","","No","","OPEN","Cyriac","Andre","Alan","Not assigned to Legal","","Renewal to be initiated"],
+  [161,"Kissflow",3,"Renewal",459062.5,"No","","OPEN","Cyriac","Prakash","Evita","Not assigned to Legal","","Ripple Wallet to be opened, 3 years commitment"],
+  [160,"Fime",3,"Apple pay Certification Jaywan and Master Debit Card Portfolio",201987.5,"Yes","","OPEN","Cyriac","Yatin","Nayan","Not assigned to Legal","","Nego ongoing"],
+  [163,"Pinelabs",3,"Resources and MPLS connection","","","","OPEN","Abhijith","Yatin","Aabir","","",""],
+  [165,"Polestar",3,"PurpleTrac Vessel Tracking Compliance Tool",110175,"No","","OPEN","Cyriac","Hanan","Israfil","Not Assigned","","Commercial Review ongoing"],
+  [4,"EXPO",4,"DBX office - Addendum for marketing fee for signage",0,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","Not assigned to Legal","","Light box signage approved, awaiting LL NOC"],
+  [28,"Ziwo",4,"Renewal. 20% reduction",572000,"","2026-01-27","OPEN","Mohamed","Andre","Aleksandra","TBD","","waiting for the updated SLA from Ops"],
+  [33,"21 FM",4,"Dubai office - Washroom signage and QR code implementation","","","","","","","","","",""],
+  [34,"DR Scent",4,"Air freshener perfume and dispenser - Dubai office","","","","","","","","","","Awaiting suppliers DEMO"],
+  [41,"TBD",4,"","","","","","","","","","",""],
+  [42,"Aldar",3,"AD Office - Addendum for Marketing fees on WIO signage",6000000,"No","","OPEN","Evita/Burhan","Prakash","Burhan","Not assigned to Legal","","Under discussion"],
+  [46,"Facstet",4,"Bonds historical graphs data",55050,"Yes","","ONHOLD","Evita","Gaurav","Sudha","","","Gaurav to come back"],
+  [50,"MixPanel",4,"Early renewal of MTU's for Mixpanel",74000,"No","NA","CLOSED","Mohamed","Yannick","Ankit Agrawal","Julian","","Legal review"],
+  [69,"Refinitiv",4,"WC1 - 3 additional licenses",38173,"No","","ONHOLD","Evita","Hanan","Israfil","","","Commercial approval to be obtained from Hanan"],
+  [70,"TBD",4,"Vessel Tracking and UBO unwrapping - 1 user license","","No","","ONHOLD","Evita","Hanan","Israfil","","","Gathering quotes"],
+  [86,"TBD",4,"IT set up for Abu dhabi office","","No","","OPEN","Karthick","Prakash","Karthick","Not assigned to Legal","","Design validation in progress"],
+  [93,"Desertchill",4,"Icecream Van","","No","","ONHOLD","Noora","Amina","Penny","","","Open PO"],
+  [94,"Vibes",4,"Promoters","","No","","ONHOLD","Noora","Amina","Penny","","","Open PO"],
+  [95,"LOS RFP",4,"LOS RFP (Newgen, Able Platform, M2P, nCino Nucleus Software)","","","","OPEN","Karthick","Yatin","Ankit Ambreshwar","Not Assigned to Legal","","RFP will be launched soon"],
+  [96,"Das Advertising",4,"Merchandise","","No","","ONHOLD","Noora","Amina","Penny","","",""],
+  [97,"Clouds Trading & Jasani",4,"Merchandise","","No","","ONHOLD","Noora","Amina","Penny","","",""],
+  [99,"Zoho Amendment",4,"Changing the entity from Singapore to UAE","","No","NA","CLOSED","Mohamed","Yatin","Betina Hess","Not assigned to Legal","","Awaiting validation from Zoho"],
+  [101,"Marriot",4,"Iftar dinner venue 25th Feb in Marriot Palm Jumairah",37500,"No","NA","CLOSED","Mohamed","Prateek","Ankita Ohri","Not assigned to Legal","","Contract in circulation"],
+  [106,"Archer",4,"Archer Renewal",415000,"No","2026-03-18","OPEN","Karthick","Faisal","Maen","TBD","","waiting for Faisal approval"],
+  [107,"Alphadata",4,"Printer rent contract renewal","","No","NA","CLOSED","Mohamed","Yannick","Mohammed Altayib","Not assigned to Legal","","With legal for review"],
+  [109,"Airship",4,"Airship Extension for 3 months",100000,"","2026-03-18","CLOSED","Karthick","Prateek","Ankit Agarwal","TBD","","waiting for the extension approval"],
+  [110,"Jocata",4,"LOS renewal","","No","","CLOSED","Abhijith","Prateek","Ankita/Jitesh","","","Awaiting plan from AAA and Ankita"],
+  [112,"ADMCC",4,"Yas office award letter Alphadata","","No","","CLOSED","Mohamed","Yannick","Mohammed Altayib","","","with legal"],
+  [116,"TBD",4,"FUJ Office - Contractor",0,"Yes","","OPEN","Evita/Burhan","Prakash","Burhan","Sally","","RFP to be launched by PMO"],
+  [118,"MetaBase",4,"Data platform licenses",36000,"No","NA","ONHOLD","Mohamed","Yannick","JEAN/Illya","Not assigned to Legal","","RFP in process"],
+  [119,"Alibaba Cloud Services",4,"Commercial comparison Alibaba Vs MS for VDI",2600000,"","TBD","OPEN","Karthick","Yannick","Aishwarya/Bhuvy","Sally","","waiting for JP approval"],
+  [120,"Notabene",4,"AML & Travel rule, pre-transaction risk management",0,"","","OPEN","Karthick","Gaurav","Enes Turk","Naima","","negotiating on the commercials"],
+  [124,"Databricks",4,"DataBricks Renewal","","","","OPEN","Karthick","Yannick","Jean","","","waiting for the consumption workloads commitment"],
+  [125,"StatusNeo",4,"SNEO - Interns hiring","","","","OPEN","Karthick","Mona","Chaks","Cregor","","waiting for Chaks consolidated feedback"],
+  [127,"FMP",4,"ETFs for Basic Financial ratios, Corporate action data","","","","ONHOLD","Cyriac","Gaurav","Sudhamai","Not assigned to Legal","","Pending revised commercials and Legal Review"],
+  [135,"Concentrix",4,"Wio Bank Renewal",218146.5,"No","2026-03-28","OPEN","Cyriac","Andre","Multiple","Not assigned to Legal","","Renewal to be initiated"],
+  [136,"Moodys",4,"IFRS9 ECL Engine",440700,"No","","OPEN","Cyriac","Faisal","Prasanna","Not assigned to Legal","","Nego ongoing. Final commercials to be sent to CFO"],
+  [138,"Capitex",4,"Payment Specialist Renewal","","No","2026-05-17","CLOSED","Cyriac","Andre","Arun","","","Pending Finance and Andre approval"],
+  [139,"Drivewealth",4,"Renewal Contract","","No","","CLOSED","Cyriac","Gaurav","","Not assigned to Legal","","Signature ongoing"],
+  [141,"EITC / Du",4,"Du SMS Platform Backup used when Etisalate is down","","No","","OPEN","Mohamed","Yannick","Ankit Agrwal","","","Ongoing discussion with DU"],
+  [144,"Mambu",4,"Renewal","","","","OPEN","Abhijith","Yannick","Ankit Agrawal","","",""],
+  [147,"Seclance",4,"VAPT","","","","OPEN","Abhijith","Yannick","Frentzen","","",""],
+  [148,"UAE KYC",4,"Replacement of EFR","","","","OPEN","Abhijith","Faisal","Ayush","","",""],
+  [150,"Getguru",4,"Renewal","","","","OPEN","Abhijith","Andre","Alan","","",""],
+  [154,"ZIP",4,"Procurement software","","No","","OPEN","Evita","Prakash","Evita","","","Demo and Nego in progress"],
+  [155,"Geek 7",4,"Cluster maintenance services 24/7","","No","","OPEN","Mohamed","Yannick","Janssen Manaloto","","","Validation with Yannick"],
+  [157,"Sana",4,"","","Yes","","CLOSED","Noora","Mona","Suniana","","","Prakash needs to sign"],
+  [159,"TBD",4,"FATCA system","","No","","OPEN","Cyriac","Hanan","Tamara","Not assigned to Legal","","Pending 3rd quote. Nego ongoing"],
+  [162,"Gtreasury",4,"Renewal",556060.64,"No","","OPEN","Cyriac","Prakash","Sunil","Not assigned to Legal","","Commercial Nego ongoing for Decision based pricing"],
+  [164,"EITC / Du",4,"Wio Domain certificate renewal","","","","","","","","","",""],
+  [166,"Al Etihad Payment",4,"AANI certification CBUAE Mandate",159000,"No","","OPEN","Cyriac","Prateek","Gopal","Pending","","Pending commercial approval from CFO and Prateek"],
+];
+// Convert rawData to objects
+// cols: [num, vendor, priority, description, tcv, renewal, docusignLink, status, procurement, exco, responsible, legalStatus, signStatus, notes]
+_priorityData = rawData.map((r,i) => ({
+  id: 'PR-'+r[0],
+  num: r[0], vendor: r[1], priority: r[2], description: r[3]||'',
+  tcv: r[4]||0, renewal: r[5]==='Yes', docusignLink: r[6]||'',
+  status: r[7]||'OPEN', procurement: r[8]||'', exco: r[9]||'',
+  responsible: r[10]||'', legalStatus: r[11]||'', signStatus: r[12]||'',
+  notes: r[13]||'', isLocal: false
+}));
+
+// ══════════════════════════════════════════════════════════════════════
+// ROLE MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════
+function selectRole(r){
+  role = r;
+  const landing = document.getElementById('landing');
+  landing.classList.add('out');
+  setTimeout(()=>{
+    landing.style.display='none';
+    document.getElementById('topbar').style.display='flex';
+    document.getElementById('main-shell').style.display='flex';
+    const tb = document.getElementById('tb-role');
+    tb.textContent = r.toUpperCase();
+    tb.className = 'tb-role '+r;
+    const mods = {vendor:'Vendor Portal',procurement:'Procurement — Contract Management',legal:'Legal — Contract Review',responsible:'Responsible Person — Sign-off'};
+    document.getElementById('tb-module').textContent = mods[r]||'Portal';
+    ['vendor','procurement','legal','responsible'].forEach(v=>{
+      document.getElementById('view-'+v).style.display = v===r?'flex':'none';
+    });
+    const saved = sessionStorage.getItem('wio_api_key');
+    if(saved){ document.getElementById('rl-api-key').value=saved; rlValidateKey(saved); }
+    refreshAll();
+  },350);
+}
+function switchRole(){
+  role=null;
+  document.getElementById('topbar').style.display='none';
+  document.getElementById('main-shell').style.display='none';
+  const l=document.getElementById('landing');
+  l.style.display='flex';l.classList.remove('out');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// DATA LAYER — Contracts from Supabase
+// ══════════════════════════════════════════════════════════════════════
+async function loadContracts(){
+  const rows = await sbFetch('contracts','?order=created_at.desc&limit=200');
+  _contracts = rows.map(r=>(({
+    ...r,
+    history: sj(r.history)||[],
+    redlineSummary: sj(r.redline_summary)||null,
+  })));
+  return _contracts;
+}
+
+async function refreshAll(){
+  await loadContracts();
+  updateBadges();
+  if(role==='vendor'){ renderVendorDashboard();renderVendorContracts(); }
+  if(role==='procurement'){ renderProcDashboard();renderProcQueue();renderAllContracts();renderPriorityList();renderReports(); }
+  if(role==='legal'){ renderLegalQueue();renderLegalAll(); }
+  if(role==='responsible'){ renderRespQueue();renderRespAll(); }
+}
+
+function updateBadges(){
+  const pending = _contracts.filter(c=>c.status==='submitted'||c.status==='review').length;
+  const legal = _contracts.filter(c=>c.status==='legal').length;
+  const resp = _contracts.filter(c=>c.status==='responsible').length;
+  const vAction = _contracts.filter(c=>c.status==='vendor_action').length;
+  const pb = document.getElementById('p-queue-badge');
+  if(pb){pb.textContent=pending;pb.style.display=pending>0?'inline':'none';}
+  const lb = document.getElementById('l-queue-badge');
+  if(lb){lb.textContent=legal;lb.style.display=legal>0?'inline':'none';}
+  const rb = document.getElementById('r-queue-badge');
+  if(rb){rb.textContent=resp;rb.style.display=resp>0?'inline':'none';}
+  const vb = document.getElementById('v-contracts-badge');
+  if(vb){vb.textContent=vAction;vb.style.display=vAction>0?'inline':'none';}
+  if(pending>0||vAction>0)document.getElementById('notif-dot').style.display='block';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// VENDOR FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════
+function vShowPanel(id){
+  document.querySelectorAll('#view-vendor .sub-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('#view-vendor .sb-item').forEach(i=>i.classList.remove('active'));
+  if(id==='v-dashboard') renderVendorDashboard();
+  if(id==='v-contracts') renderVendorContracts();
+}
+function renderVendorDashboard(){
+  const all = _contracts;
+  const action = all.filter(c=>c.status==='vendor_action');
+  const pending = all.filter(c=>['submitted','review','legal','responsible'].includes(c.status));
+  const complete = all.filter(c=>['approved','docusign','completed'].includes(c.status));
+  document.getElementById('v-stat-total').textContent = all.length;
+  document.getElementById('v-stat-pending').textContent = pending.length;
+  document.getElementById('v-stat-action').textContent = action.length;
+  document.getElementById('v-stat-complete').textContent = complete.length;
+  // Action required list
+  const al = document.getElementById('v-action-list');
+  if(action.length===0){al.innerHTML=emptyState('✅','No action required','All contracts are being reviewed');return;}
+  al.innerHTML = contractTable(action, ['title','vendor_name','status','redline','action']);
+  // Recent
+  const rl2 = document.getElementById('v-recent-list');
+  rl2.innerHTML = contractTable(all.slice(0,5), ['title','vendor_name','status','created_at','action']);
+}
+function renderVendorContracts(){
+  const sf = document.getElementById('vc-status')?.value||'';
+  const sq = (document.getElementById('vc-search')?.value||'').toLowerCase();
+  let list = _contracts;
+  if(sf) list=list.filter(c=>c.status===sf);
+  if(sq) list=list.filter(c=>(c.title+c.vendor_name).toLowerCase().includes(sq));
+  document.getElementById('v-contracts-list').innerHTML = contractTable(list, ['ref','title','type','status','redline','created_at','action']);
+}
+async function submitContract(){
+  const title = document.getElementById('nc-title').value.trim();
+  const type = document.getElementById('nc-type').value;
+  const vendor = document.getElementById('nc-vendor').value.trim();
+  const email = document.getElementById('nc-email').value.trim();
+  if(!title||!vendor||!email||!type){toast('⚠ Fill all required fields');return;}
+  const ref = 'CTR-'+Date.now().toString().slice(-6);
+  const now = new Date();
+  const row = {
+    ref, title, vendor_name: vendor, vendor_email: email, contract_type: type,
+    status: 'submitted', priority: 2, current_step: 2,
+    value: document.getElementById('nc-value').value||'0',
+    currency: 'AED',
+    start_date: document.getElementById('nc-start').value||null,
+    end_date: document.getElementById('nc-end').value||null,
+    submitted_by: email,
+    submitted_at: now.toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'}),
+    procurement_notes: document.getElementById('nc-desc').value||'',
+    original_doc_name: ncUploadedFile?.name||null,
+    history: JSON.stringify([{action:'Submitted by Vendor',by:email,at:now.toISOString(),note:''}]),
+  };
+  const res = await sbUpsert('contracts', row);
+  if(res){
+    toast('✅ Contract submitted to Procurement!');
+    ncUploadedFile=null;
+    ['nc-title','nc-vendor','nc-email','nc-value','nc-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+    document.getElementById('nc-file-display').innerHTML='';
+    vShowPanel('v-dashboard');
+    await refreshAll();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// PROCUREMENT FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════
+function pShowPanel(id){
+  document.querySelectorAll('#view-procurement .sub-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('#view-procurement .sb-item').forEach(i=>i.classList.remove('active'));
+  if(id==='p-dashboard') renderProcDashboard();
+  if(id==='p-priority') renderPriorityList();
+  if(id==='p-queue') renderProcQueue();
+  if(id==='p-all') renderAllContracts();
+  if(id==='p-reports') renderReports();
+}
+function renderProcDashboard(){
+  const all = _contracts;
+  const p1 = _priorityData.filter(c=>c.priority===1&&c.status==='OPEN');
+  const pending = all.filter(c=>['submitted','review'].includes(c.status));
+  const complete = all.filter(c=>['completed','approved'].includes(c.status));
+  document.getElementById('p-stat-total').textContent = _priorityData.length + all.length;
+  document.getElementById('p-stat-p1').textContent = p1.length;
+  document.getElementById('p-stat-review').textContent = pending.length;
+  document.getElementById('p-stat-complete').textContent = complete.length;
+  // P1 list
+  const p1el = document.getElementById('p-p1-list');
+  if(p1.length===0){p1el.innerHTML=emptyState('🎉','No P1 contracts pending','All urgent contracts are handled');}
+  else{p1el.innerHTML=priorityMiniTable(p1.slice(0,5));}
+  // Incoming from vendors
+  const inel = document.getElementById('p-incoming-list');
+  if(pending.length===0){inel.innerHTML=emptyState('📭','No submissions','Vendor submissions appear here');}
+  else{inel.innerHTML=contractTable(pending,['ref','title','vendor_name','status','created_at','action']);}
+}
+async function initiateProcReview(){
+  const title=document.getElementById('pn-title').value.trim();
+  const vendor=document.getElementById('pn-vendor').value.trim();
+  if(!title||!vendor){toast('⚠ Title and vendor are required');return;}
+  const ref='CTR-'+Date.now().toString().slice(-6);
+  const now=new Date();
+  const row={
+    ref,title,vendor_name:vendor,vendor_email:document.getElementById('pn-email').value||'',
+    contract_type:document.getElementById('pn-type').value,
+    status:'review',priority:parseInt(document.getElementById('pn-priority').value),
+    current_step:3,
+    value:document.getElementById('pn-value').value||'0',currency:'AED',
+    due_date:document.getElementById('pn-due').value||null,
+    procurement_officer:document.getElementById('pn-proc').value||'',
+    legal_reviewer:document.getElementById('pn-legal').value||'',
+    responsible_person:document.getElementById('pn-resp').value||'',
+    responsible_email:document.getElementById('pn-resp-email').value||'',
+    procurement_notes:document.getElementById('pn-notes').value||'',
+    original_doc_name:pnUploadedFile?.name||null,
+    submitted_at:now.toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'}),
+    submitted_by:document.getElementById('pn-proc').value||'Procurement',
+    history:JSON.stringify([{action:'Review Initiated by Procurement',by:document.getElementById('pn-proc').value||'Procurement',at:now.toISOString(),note:document.getElementById('pn-notes').value||''}]),
+  };
+  const res = await sbUpsert('contracts',row);
+  if(res){
+    toast('✅ Contract review initiated — Legal & Responsible notified');
+    pnUploadedFile=null;
+    document.getElementById('pn-file-display').innerHTML='';
+    ['pn-title','pn-vendor','pn-email','pn-value','pn-notes','pn-proc','pn-legal','pn-resp','pn-resp-email'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+    pShowPanel('p-dashboard');
+    await refreshAll();
+  }
+}
+function renderProcQueue(){
+  const sf=document.getElementById('pq-status')?.value||'';
+  const sq=(document.getElementById('pq-search')?.value||'').toLowerCase();
+  let list=_contracts.filter(c=>['submitted','review'].includes(c.status));
+  if(sf) list=list.filter(c=>c.status===sf);
+  if(sq) list=list.filter(c=>(c.title+c.vendor_name+c.ref).toLowerCase().includes(sq));
+  document.getElementById('p-queue-list').innerHTML=contractTable(list,['ref','title','vendor_name','type','status','priority_chip','created_at','action']);
+}
+function renderAllContracts(){
+  const sf=document.getElementById('pa-status')?.value||'';
+  const pf=document.getElementById('pa-priority')?.value||'';
+  const sq=(document.getElementById('pa-search')?.value||'').toLowerCase();
+  let list=_contracts;
+  if(sf) list=list.filter(c=>c.status===sf);
+  if(pf) list=list.filter(c=>String(c.priority)===pf);
+  if(sq) list=list.filter(c=>(c.title+c.vendor_name+c.ref).toLowerCase().includes(sq));
+  document.getElementById('p-all-list').innerHTML=contractTable(list,['ref','title','vendor_name','type','status','priority_chip','step','created_at','action']);
+}
+function renderReports(){
+  const all=_contracts;
+  document.getElementById('rp-total').textContent=_priorityData.length+all.length;
+  document.getElementById('rp-complete').textContent=all.filter(c=>['completed','approved'].includes(c.status)).length;
+  document.getElementById('rp-open').textContent=all.filter(c=>!['completed','approved'].includes(c.status)).length;
+  const totalVal=_contracts.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
+  document.getElementById('rp-value').textContent=(totalVal/1000000).toFixed(1);
+  document.getElementById('p-reports-list').innerHTML=contractTable(all,['ref','title','vendor_name','type','status','priority_chip','value','created_at','action']);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// LEGAL FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════
+function lShowPanel(id){
+  document.querySelectorAll('#view-legal .sub-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function renderLegalQueue(){
+  const list=_contracts.filter(c=>c.status==='legal');
+  document.getElementById('l-queue-list').innerHTML=contractTable(list,['ref','title','vendor_name','type','redline','created_at','action'],true);
+}
+function renderLegalAll(){
+  const list=_contracts.filter(c=>c.status==='legal'||c.legal_notes);
+  document.getElementById('l-all-list').innerHTML=contractTable(list,['ref','title','vendor_name','type','status','redline','created_at','action'],true);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// RESPONSIBLE FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════
+function rShowPanel(id){
+  document.querySelectorAll('#view-responsible .sub-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function renderRespQueue(){
+  const list=_contracts.filter(c=>c.status==='responsible');
+  document.getElementById('r-queue-list').innerHTML=contractTable(list,['ref','title','vendor_name','type','redline_summary_chip','created_at','action'],false,true);
+}
+function renderRespAll(){
+  const list=_contracts.filter(c=>c.status==='responsible'||c.responsible_notes);
+  document.getElementById('r-all-list').innerHTML=contractTable(list,['ref','title','vendor_name','type','status','created_at','action'],false,true);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CONTRACT TABLE RENDERER
+// ══════════════════════════════════════════════════════════════════════
+function contractTable(list, cols, isLegal=false, isResp=false){
+  if(!list||list.length===0) return emptyState('📭','No contracts','Contracts appear here when submitted');
+  const hMap={
+    ref:'Ref',title:'Contract',vendor_name:'Vendor',type:'Type',
+    status:'Status',priority_chip:'Priority',step:'Step',
+    redline:'Redline',redline_summary_chip:'AI Summary',
+    value:'Value (AED)',created_at:'Submitted',action:''
+  };
+  const headers = cols.map(c=>`<th>${hMap[c]||c}</th>`).join('');
+  const rows = list.map(c=>{
+    const cells = cols.map(col=>{
+      if(col==='ref') return `<td><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${c.ref||'—'}</span></td>`;
+      if(col==='title') return `<td><div class="tv">${c.title||'—'}</div><div class="ts">${c.contract_type||''}</div></td>`;
+      if(col==='vendor_name') return `<td><div class="tv">${c.vendor_name||'—'}</div><div class="ts">${c.vendor_email||''}</div></td>`;
+      if(col==='type') return `<td style="font-size:11px">${c.contract_type||'—'}</td>`;
+      if(col==='status') return `<td>${statusChip(c.status)}</td>`;
+      if(col==='priority_chip') return `<td>${prioChip(c.priority)}</td>`;
+      if(col==='step') return `<td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Step ${c.current_step||1}/5</span></td>`;
+      if(col==='redline') return `<td>${c.redline_summary?'<span class="chip chip-legal">✓ Redlined</span>':'<span class="chip chip-draft">No redline</span>'}</td>`;
+      if(col==='redline_summary_chip') return `<td>${c.redline_summary?`<span class="chip chip-legal" style="cursor:pointer" onclick="openDrawer('${c.ref}')">View Summary</span>`:'—'}</td>`;
+      if(col==='value') return `<td style="font-family:'DM Mono',monospace;font-size:11px">${c.value?Number(c.value).toLocaleString():'—'}</td>`;
+      if(col==='created_at') return `<td style="font-size:11px;color:var(--muted)">${c.submitted_at||fmtDate(c.created_at)||'—'}</td>`;
+      if(col==='action') return `<td><button class="btn btn-sm btn-primary" onclick="openDrawer('${c.ref}')">Review →</button></td>`;
+      return `<td>—</td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  return `<table class="tbl"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+function statusChip(s){
+  const m={
+    draft:'chip-draft',submitted:'chip-submitted',review:'chip-review',
+    legal:'chip-legal',responsible:'chip-responsible',approved:'chip-approved',
+    docusign:'chip-docusign',completed:'chip-completed',rejected:'chip-rejected',
+    vendor_action:'chip-review'
+  };
+  const l={draft:'Draft',submitted:'Submitted',review:'Under Review',legal:'Legal Review',
+    responsible:'Responsible',approved:'Approved',docusign:'DocuSign',
+    completed:'Completed',rejected:'Rejected',vendor_action:'Action Required'};
+  return `<span class="chip ${m[s]||'chip-draft'}">${l[s]||s}</span>`;
+}
+function prioChip(p){
+  const m={1:'chip-p1',2:'chip-p2',3:'chip-p3',4:'chip-p4'};
+  const l={1:'P1 TODAY',2:'P2 WEEK',3:'P3 NEXT',4:'P4 LATER'};
+  return `<span class="chip ${m[p]||'chip-p4'}">${l[p]||'P'+p}</span>`;
+}
+function fmtDate(d){ if(!d) return ''; try{return new Date(d).toLocaleDateString('en-AE',{day:'2-digit',month:'short',year:'numeric'})}catch(e){return d} }
+function emptyState(icon,title,sub){return `<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-sub">${sub}</div></div>`;}
+
+// ══════════════════════════════════════════════════════════════════════
+// CONTRACT DETAIL DRAWER
+// ══════════════════════════════════════════════════════════════════════
+function openDrawer(ref){
+  const c=_contracts.find(x=>x.ref===ref);
+  if(!c){toast('Could not load contract');return;}
+  currentContractRef=ref;
+  document.getElementById('drawer-title').textContent=c.title||'—';
+  document.getElementById('drawer-ref').textContent=ref+' · '+fmtDate(c.created_at);
+  document.getElementById('drawer-chip').innerHTML=statusChip(c.status);
+  
+  // Build workflow progress
+  const steps=['Initiated','Vendor Submitted','Legal + Responsible','Review & Sign-off','DocuSign'];
+  const step=c.current_step||1;
+  const wf=steps.map((s,i)=>{
+    const done=i+1<step,act=i+1===step;
+    return `<div class="tl-item"><div class="tl-dot ${done?'done':act?'active':''}">${done?'✓':i+1}</div><div class="tl-content"><div class="tl-title">${s}</div><div class="tl-meta">${done?'Completed':act?'In Progress':'Pending'}</div></div></div>`;
+  }).join('');
+
+  // Redline summary
+  const rl=sj(c.redline_summary)||c.redline_summary;
+  let rlHtml='';
+  if(rl){
+    rlHtml=`
+    <div class="detail-sec">
+      <div class="detail-sec-title">⚖️ AI Redline Summary <span style="font-size:10px;color:var(--muted);font-weight:400;font-family:'DM Mono',monospace">by ${c.redline_by||'Unknown'} · ${c.redline_at||''}</span></div>
+      ${renderRedlineSummary(rl)}
+    </div>`;
+  }
+
+  document.getElementById('drawer-body').innerHTML=`
+    <div class="detail-sec">
+      <div class="detail-sec-title">Contract Details</div>
+      <div class="detail-grid">
+        <div class="df"><div class="df-lbl">Title</div><div class="df-val">${c.title||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Type</div><div class="df-val">${c.contract_type||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Vendor</div><div class="df-val">${c.vendor_name||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Email</div><div class="df-val">${c.vendor_email||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Value (AED)</div><div class="df-val mono">${c.value?Number(c.value).toLocaleString():'—'}</div></div>
+        <div class="df"><div class="df-lbl">Priority</div><div class="df-val">${prioChip(c.priority)}</div></div>
+        <div class="df"><div class="df-lbl">Start Date</div><div class="df-val">${c.start_date||'—'}</div></div>
+        <div class="df"><div class="df-lbl">End Date</div><div class="df-val">${c.end_date||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Due Date</div><div class="df-val">${c.due_date||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Submitted</div><div class="df-val">${c.submitted_at||'—'}</div></div>
+      </div>
+    </div>
+    <div class="detail-sec">
+      <div class="detail-sec-title">Team</div>
+      <div class="detail-grid">
+        <div class="df"><div class="df-lbl">Procurement Officer</div><div class="df-val">${c.procurement_officer||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Legal Reviewer</div><div class="df-val">${c.legal_reviewer||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Responsible Person</div><div class="df-val">${c.responsible_person||'—'}</div></div>
+        <div class="df"><div class="df-lbl">Document</div><div class="df-val">${c.original_doc_name||'—'}</div></div>
+      </div>
+    </div>
+    ${rlHtml}
+    <div class="detail-sec">
+      <div class="detail-sec-title">Workflow Progress</div>
+      <div class="timeline">${wf}</div>
+    </div>
+    ${c.procurement_notes?`<div class="detail-sec"><div class="detail-sec-title">Procurement Notes</div><div style="font-size:12px;padding:8px;background:var(--bg);border-radius:6px">${c.procurement_notes}</div></div>`:''};
+    ${c.legal_notes?`<div class="detail-sec"><div class="detail-sec-title">Legal Notes</div><div style="font-size:12px;padding:8px;background:var(--purple-light);border-radius:6px">${c.legal_notes}</div></div>`:''};
+    ${c.responsible_notes?`<div class="detail-sec"><div class="detail-sec-title">Responsible Person Notes</div><div style="font-size:12px;padding:8px;background:var(--gold-light);border-radius:6px">${c.responsible_notes}</div></div>`:''};
+    <div class="detail-sec">
+      <div class="detail-sec-title">Activity Timeline</div>
+      <div class="timeline">${(sj(c.history)||c.history||[]).map(h=>`<div class="tl-item"><div class="tl-dot done">✓</div><div class="tl-content"><div class="tl-title">${h.action} — ${h.by}</div><div class="tl-meta">${fmtDate(h.at)} ${h.note?'· '+h.note:''}</div></div></div>`).join('')}</div>
+    </div>
+    <div class="detail-sec">
+      <div class="detail-sec-title">Add Notes</div>
+      <textarea id="drawer-notes" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;min-height:72px;background:var(--bg);resize:vertical" placeholder="Add your notes…">${role==='procurement'?c.procurement_notes||'':role==='legal'?c.legal_notes||'':role==='responsible'?c.responsible_notes||'':''}</textarea>
+    </div>`;
+
+  // Footer actions based on role
+  document.getElementById('drawer-footer').innerHTML=drawerFooter(c);
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('contract-drawer').classList.add('open');
+}
+
+function drawerFooter(c){
+  if(role==='procurement'){
+    return `
+      <button class="btn btn-success btn-sm" onclick="contractAction('send_legal')">→ Send to Legal</button>
+      <button class="btn btn-gold btn-sm" onclick="contractAction('send_responsible')">→ Send to Responsible</button>
+      <button class="btn btn-purple btn-sm" onclick="openRedlineModal()">⚖️ Redline</button>
+      <button class="btn btn-success btn-sm" onclick="contractAction('approved')">✓ Approve</button>
+      <button class="btn btn-danger btn-sm" onclick="contractAction('rejected')">✗ Reject</button>
+      <button class="btn btn-ghost btn-sm" onclick="contractAction('vendor_action')">↩ Return to Vendor</button>`;
+  }
+  if(role==='legal'){
+    return `
+      <button class="btn btn-purple btn-sm" onclick="openRedlineModal()">⚖️ Upload Redline</button>
+      <button class="btn btn-success btn-sm" onclick="contractAction('legal_approved')">✓ Legal Sign-off</button>
+      <button class="btn btn-danger btn-sm" onclick="contractAction('legal_rejected')">✗ Reject</button>
+      <button class="btn btn-ghost btn-sm" onclick="contractAction('vendor_action')">↩ Return to Vendor</button>`;
+  }
+  if(role==='responsible'){
+    return `
+      <button class="btn btn-success btn-sm" onclick="contractAction('resp_approved')">✓ Sign-off & Approve</button>
+      <button class="btn btn-gold btn-sm" onclick="contractAction('docusign')">📝 Initiate DocuSign</button>
+      <button class="btn btn-danger btn-sm" onclick="contractAction('rejected')">✗ Reject</button>
+      <button class="btn btn-ghost btn-sm" onclick="contractAction('vendor_action')">↩ Return to Vendor</button>`;
+  }
+  if(role==='vendor'){
+    return `<div style="font-size:12px;color:var(--muted)">${c.status==='vendor_action'?'⚠ Action required — review notes and resubmit':'Contract is with '+c.status+' for review'}</div>
+      ${c.status==='vendor_action'?`<button class="btn btn-primary btn-sm" onclick="contractAction('resubmit')">↑ Resubmit</button>`:''};
+      <button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Close</button>`;
+  }
+  return `<button class="btn btn-ghost btn-sm" onclick="closeDrawer()">Close</button>`;
+}
+
+async function contractAction(action){
+  const c=_contracts.find(x=>x.ref===currentContractRef);
+  if(!c) return;
+  const notes=document.getElementById('drawer-notes')?.value||'';
+  const now=new Date();
+  const history=sj(c.history)||c.history||[];
+  const actionMap={
+    send_legal:{status:'legal',step:3,label:'Sent to Legal'},
+    send_responsible:{status:'responsible',step:4,label:'Sent to Responsible Person'},
+    approved:{status:'approved',step:5,label:'Approved by Procurement'},
+    rejected:{status:'rejected',step:c.current_step,label:'Rejected'},
+    vendor_action:{status:'vendor_action',step:c.current_step,label:'Returned to Vendor for Action'},
+    legal_approved:{status:'responsible',step:4,label:'Legal Sign-off Granted'},
+    legal_rejected:{status:'rejected',step:3,label:'Rejected by Legal'},
+    resp_approved:{status:'approved',step:5,label:'Responsible Person Sign-off Granted'},
+    docusign:{status:'docusign',step:5,label:'DocuSign Initiated'},
+    resubmit:{status:'submitted',step:2,label:'Resubmitted by Vendor'},
+  };
+  const am=actionMap[action];
+  if(!am)return;
+  history.push({action:am.label,by:role,at:now.toISOString(),note:notes});
+  const update={
+    status:am.status,current_step:am.step,
+    history:JSON.stringify(history),
+  };
+  if(role==='procurement'&&notes) update.procurement_notes=notes;
+  if(role==='legal'&&notes) update.legal_notes=notes;
+  if(role==='responsible'&&notes) update.responsible_notes=notes;
+  if(action==='approved') update.approved_at=now.toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'});
+  await sbPatch('contracts','ref',currentContractRef,update);
+  toast('✅ '+am.label);
+  closeDrawer();
+  await refreshAll();
+}
+
+function closeDrawer(){
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('contract-drawer').classList.remove('open');
+  currentContractRef=null;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REDLINE ANALYSIS
+// ══════════════════════════════════════════════════════════════════════
+function openRedlineModal(){
+  document.getElementById('redline-modal').classList.add('open');
+  checkRedlineReady();
+}
+function closeRedlineModal(){
+  document.getElementById('redline-modal').classList.remove('open');
+}
+function rlValidateKey(val){
+  const valid=val.trim().startsWith('sk-ant-');
+  document.getElementById('rl-key-status').textContent=val.length===0?'⬜':valid?'✅':'❌';
+  if(valid)sessionStorage.setItem('wio_api_key',val.trim());
+  checkRedlineReady();
+}
+function checkRedlineReady(){
+  const hasKey=document.getElementById('rl-api-key').value.trim().startsWith('sk-ant-');
+  const btn=document.getElementById('rl-run-btn');
+  // Allow running with just one document (AI will extract clauses from it)
+  btn.disabled=!(rlOrigFile||rlRedFile)||!hasKey;
+}
+function handleRedlineUpload(type,input){
+  if(!input.files||!input.files[0])return;
+  const f=input.files[0];
+  if(type==='original'){rlOrigFile=f;document.getElementById('rl-original-display').innerHTML=fileChip(f,'rl-original');}
+  else{rlRedFile=f;document.getElementById('rl-redlined-display').innerHTML=fileChip(f,'rl-redlined');}
+  checkRedlineReady();
+}
+function fileChip(f,id){
+  const s=f.size>1024*1024?(f.size/1024/1024).toFixed(1)+' MB':(f.size/1024).toFixed(0)+' KB';
+  return `<div class="uploaded-file"><div class="uf-icon">📄</div><div class="uf-info"><div class="uf-name">${f.name}</div><div class="uf-meta">${s}</div></div></div>`;
+}
+
+async function runRedlineAnalysis(){
+  const apiKey=document.getElementById('rl-api-key').value.trim();
+  if(!apiKey.startsWith('sk-ant-')){toast('⚠ Enter your API key');return;}
+  document.getElementById('rl-progress').style.display='block';
+  document.getElementById('rl-run-btn').disabled=true;
+  setRlProg(10,'Reading documents…');
+  try{
+    const parts=[];
+    if(rlOrigFile){
+      const b64=await toB64(rlOrigFile);
+      const mt=rlOrigFile.name.endsWith('.pdf')?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      parts.push({type:'document',source:{type:'base64',media_type:mt,data:b64},title:'ORIGINAL CONTRACT'});
+    }
+    if(rlRedFile){
+      const b64=await toB64(rlRedFile);
+      const mt=rlRedFile.name.endsWith('.pdf')?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      parts.push({type:'document',source:{type:'base64',media_type:mt,data:b64},title:'REDLINED VERSION'});
+    }
+    setRlProg(40,'Sending to AI for analysis…');
+    const isBoth=rlOrigFile&&rlRedFile;
+    const prompt=isBoth?`You are a legal expert analysing contract redlines. Compare the ORIGINAL CONTRACT with the REDLINED VERSION and produce a structured JSON summary of ALL changes.
+
+Return ONLY valid JSON in this exact format:
+{
+  "summary": "2-3 sentence executive overview of the changes",
+  "risk_level": "Low|Medium|High",
+  "added": [
+    {"clause": "Clause name/section", "text": "New text added"}
+  ],
+  "removed": [
+    {"clause": "Clause name/section", "text": "Text that was removed"}
+  ],
+  "modified": [
+    {"clause": "Clause name/section", "before": "Original text", "after": "New text", "significance": "Why this matters"}
+  ],
+  "key_concerns": ["concern 1", "concern 2"],
+  "recommendation": "Approve|Approve with conditions|Reject",
+  "recommendation_reason": "reason"
+}`
+    :`You are a legal expert. Extract and summarise the key clauses and terms from this contract document.
+
+Return ONLY valid JSON:
+{
+  "summary": "2-3 sentence overview of this contract",
+  "risk_level": "Low|Medium|High",
+  "added": [],
+  "removed": [],
+  "modified": [],
+  "key_clauses": [
+    {"clause": "Clause name", "text": "Key content"}
+  ],
+  "key_concerns": ["concern 1"],
+  "recommendation": "Approve|Approve with conditions|Review Required",
+  "recommendation_reason": "reason"
+}`;
+    parts.push({type:'text',text:prompt});
+    setRlProg(60,'AI is analysing…');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:parts}]})
+    });
+    if(!res.ok)throw new Error('API '+res.status+': '+await res.text());
+    const data=await res.json();
+    const txt=(data.content||[]).map(b=>b.text||'').join('');
+    const m=txt.match(/\{[\s\S]*\}/);
+    if(!m)throw new Error('No JSON in response');
+    const parsed=JSON.parse(m[0]);
+    setRlProg(90,'Saving to contract record…');
+    // Save to contract
+    if(currentContractRef){
+      const now=new Date();
+      const c=_contracts.find(x=>x.ref===currentContractRef);
+      const history=sj(c?.history)||c?.history||[];
+      history.push({action:'Redline Analysis Completed',by:role,at:now.toISOString(),note:'AI analysed '+(rlOrigFile?rlOrigFile.name:'')+(rlRedFile?' vs '+rlRedFile.name:'')});
+      await sbPatch('contracts','ref',currentContractRef,{
+        redline_summary:JSON.stringify(parsed),
+        redlined_doc_name:rlRedFile?.name||null,
+        original_doc_name:rlOrigFile?.name||c?.original_doc_name||null,
+        redline_by:role,
+        redline_at:now.toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'}),
+        history:JSON.stringify(history),
+      });
+    }
+    setRlProg(100,'Complete!');
+    await refreshAll();
+    closeRedlineModal();
+    // Show results
+    if(currentContractRef) openDrawer(currentContractRef);
+    toast('✅ Redline analysis complete — summary saved to contract');
+    rlOrigFile=null;rlRedFile=null;
+    document.getElementById('rl-original-display').innerHTML='';
+    document.getElementById('rl-redlined-display').innerHTML='';
+  }catch(e){
+    console.error(e);
+    toast('⚠ Redline analysis failed: '+e.message.slice(0,80));
+  }finally{
+    document.getElementById('rl-progress').style.display='none';
+    document.getElementById('rl-run-btn').disabled=false;
+  }
+}
+
+function setRlProg(pct,txt){
+  document.getElementById('rl-prog-fill').style.width=pct+'%';
+  document.getElementById('rl-prog-text').textContent=txt;
+}
+
+function renderRedlineSummary(rl){
+  if(typeof rl==='string') rl=sj(rl)||{};
+  const riskColor={Low:'var(--green)',Medium:'var(--amber)',High:'var(--red)'};
+  const recColor={Approve:'var(--green)','Approve with conditions':'var(--amber)',Reject:'var(--red)','Review Required':'var(--amber)'};
+  let html=`
+  <div style="background:var(--blue-light);border-radius:9px;padding:14px 16px;margin-bottom:12px;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--blue-mid)">📋 Executive Summary</div>
+    <div style="font-size:12px;color:var(--ink2);line-height:1.6">${rl.summary||'—'}</div>
+    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;color:${riskColor[rl.risk_level]||'var(--muted)'}">⚠ Risk: ${rl.risk_level||'—'}</span>
+      <span style="font-size:11px;font-weight:700;color:${recColor[rl.recommendation]||'var(--muted)'}">✓ Recommendation: ${rl.recommendation||'—'}</span>
+    </div>
+    ${rl.recommendation_reason?`<div style="font-size:11px;color:var(--muted);margin-top:5px">${rl.recommendation_reason}</div>`:''};
+  </div>`;
+
+  if(rl.added&&rl.added.length>0){
+    html+=`<div class="redline-container" style="margin-bottom:10px">
+      <div class="redline-header added"><div class="rh-title" style="color:var(--green)">✚ Added (${rl.added.length})</div><span class="rh-count" style="background:var(--green-light);color:var(--green)">${rl.added.length} clause${rl.added.length>1?'s':''}</span></div>
+      ${rl.added.map(a=>`<div class="redline-item"><div class="ri-clause">${a.clause||'New Clause'}</div><div class="ri-new">${a.text}</div></div>`).join('')}
+    </div>`;
+  }
+  if(rl.removed&&rl.removed.length>0){
+    html+=`<div class="redline-container" style="margin-bottom:10px">
+      <div class="redline-header removed"><div class="rh-title" style="color:var(--red)">✖ Removed (${rl.removed.length})</div><span class="rh-count" style="background:var(--red-light);color:var(--red)">${rl.removed.length} clause${rl.removed.length>1?'s':''}</span></div>
+      ${rl.removed.map(r=>`<div class="redline-item"><div class="ri-clause">${r.clause||'Removed Clause'}</div><div class="ri-removed">${r.text}</div></div>`).join('')}
+    </div>`;
+  }
+  if(rl.modified&&rl.modified.length>0){
+    html+=`<div class="redline-container" style="margin-bottom:10px">
+      <div class="redline-header modified"><div class="rh-title" style="color:var(--amber)">✎ Modified (${rl.modified.length})</div><span class="rh-count" style="background:var(--amber-light);color:var(--amber)">${rl.modified.length} change${rl.modified.length>1?'s':''}</span></div>
+      ${rl.modified.map(m=>`<div class="redline-item"><div class="ri-clause">${m.clause}</div><div class="ri-before">${m.before}</div><div class="ri-after">${m.after}</div>${m.significance?`<div style="font-size:10px;color:var(--muted);margin-top:4px;font-style:italic">ℹ ${m.significance}</div>`:''}</div>`).join('')}
+    </div>`;
+  }
+  if(rl.key_clauses&&rl.key_clauses.length>0){
+    html+=`<div class="redline-container" style="margin-bottom:10px">
+      <div class="redline-header summary"><div class="rh-title" style="color:var(--blue-mid)">📑 Key Clauses</div></div>
+      ${rl.key_clauses.map(k=>`<div class="redline-item"><div class="ri-clause">${k.clause}</div><div class="ri-text">${k.text}</div></div>`).join('')}
+    </div>`;
+  }
+  if(rl.key_concerns&&rl.key_concerns.length>0){
+    html+=`<div style="background:var(--amber-light);border:1px solid #f5d090;border-radius:9px;padding:12px 14px;margin-top:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">⚠ Key Concerns</div>
+      ${rl.key_concerns.map(c=>`<div style="font-size:12px;color:var(--amber);padding:3px 0;border-bottom:1px solid rgba(0,0,0,.06)">• ${c}</div>`).join('')}
+    </div>`;
+  }
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// PRIORITY LIST
+// ══════════════════════════════════════════════════════════════════════
+function filterPriority(p, el){
+  priorityFilter=p;
+  document.querySelectorAll('.pill-filter').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  renderPriorityList();
+}
+function renderPriorityList(){
+  const sq=(document.getElementById('pr-search')?.value||'').toLowerCase();
+  const sf=document.getElementById('pr-status')?.value||'';
+  let data=[..._priorityData];
+  if(priorityFilter>0) data=data.filter(c=>c.priority===priorityFilter);
+  if(sf) data=data.filter(c=>c.status===sf);
+  if(sq) data=data.filter(c=>(c.vendor+c.description+c.notes).toLowerCase().includes(sq));
+  const byPriority=[1,2,3,4].map(p=>data.filter(c=>c.priority===p));
+  const pLabels={1:'P1 — Sign TODAY',2:'P2 — This Week',3:'P3 — Next Week',4:'P4 — 2+ Weeks'};
+  const pClass={1:'p1-hdr',2:'p2-hdr',3:'p3-hdr',4:'p4-hdr'};
+  const pDot={1:'p1-dot',2:'p2-dot',3:'p3-dot',4:'p4-dot'};
+  let html='';
+  byPriority.forEach((list,i)=>{
+    const p=i+1;
+    if(list.length===0&&priorityFilter!==0) return;
+    html+=`<div class="p-section">
+      <div class="p-section-hdr ${pClass[p]}">
+        <span class="p-dot ${pDot[p]}"></span>${pLabels[p]}
+        <span style="margin-left:auto;font-size:10px;font-family:'DM Mono',monospace;opacity:.7">${list.length} contract${list.length!==1?'s':''}</span>
+      </div>
+      <div class="p-tbl-wrap">
+        ${list.length===0?emptyState('📭','None','No contracts in this priority'):`
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Vendor</th><th>Description</th><th>TCV (AED)</th><th>Renewal</th><th>Status</th><th>Procurement</th><th>ExCo</th><th>Responsible</th><th>Legal</th><th>Notes</th><th></th></tr></thead>
+          <tbody>
+            ${list.map(c=>`<tr>
+              <td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${c.num}</td>
+              <td><div class="tv">${c.vendor}</div></td>
+              <td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.description||'—'}</td>
+              <td style="font-family:'DM Mono',monospace;font-size:11px">${c.tcv?Number(c.tcv).toLocaleString():'—'}</td>
+              <td style="font-size:11px">${c.renewal?'<span class="chip chip-submitted">Yes</span>':'—'}</td>
+              <td><span class="chip ${c.status==='OPEN'?'chip-open':c.status==='CLOSED'?'chip-closed':'chip-onhold'}">${c.status}</span></td>
+              <td style="font-size:11px">${c.procurement||'—'}</td>
+              <td style="font-size:11px">${c.exco||'—'}</td>
+              <td style="font-size:11px">${c.responsible||'—'}</td>
+              <td style="font-size:11px">${c.legalStatus||'—'}</td>
+              <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)">${c.notes||'—'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="editPriorityContract('${c.id}')">Edit</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`}
+      </div>
+    </div>`;
+  });
+  document.getElementById('priority-list-container').innerHTML=html;
+}
+function priorityMiniTable(list){
+  return `<table class="tbl"><thead><tr><th>Vendor</th><th>TCV (AED)</th><th>Procurement</th><th>Notes</th></tr></thead><tbody>
+    ${list.map(c=>`<tr><td><div class="tv">${c.vendor}</div><div class="ts">${c.description||''}</div></td><td style="font-family:'DM Mono',monospace;font-size:11px">${c.tcv?Number(c.tcv).toLocaleString():'—'}</td><td style="font-size:11px">${c.procurement||'—'}</td><td style="font-size:11px;color:var(--muted)">${c.notes||'—'}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function openAddContractModal(){ document.getElementById('add-contract-modal').classList.add('open'); }
+function addPriorityContract(){
+  const vendor=document.getElementById('ac-vendor').value.trim();
+  if(!vendor){toast('⚠ Vendor name required');return;}
+  const newC={
+    id:'PR-'+Date.now(),num:_priorityData.length+1,
+    vendor,priority:parseInt(document.getElementById('ac-priority').value),
+    description:document.getElementById('ac-desc').value||'',
+    tcv:parseFloat(document.getElementById('ac-tcv').value)||0,
+    renewal:false,
+    status:document.getElementById('ac-status').value,
+    procurement:document.getElementById('ac-proc').value||'',
+    exco:document.getElementById('ac-exco').value||'',
+    responsible:document.getElementById('ac-resp').value||'',
+    legalStatus:document.getElementById('ac-legal').value||'',
+    notes:document.getElementById('ac-notes').value||'',
+    isLocal:true
+  };
+  _priorityData.push(newC);
+  document.getElementById('add-contract-modal').classList.remove('open');
+  ['ac-vendor','ac-desc','ac-tcv','ac-proc','ac-exco','ac-resp','ac-legal','ac-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  renderPriorityList();
+  toast('✅ Contract added to priority list');
+}
+function editPriorityContract(id){
+  const c=_priorityData.find(x=>x.id===id);
+  if(!c)return;
+  // Simple inline edit via prompt for now
+  const newNotes=window.prompt('Update notes for '+c.vendor+':',c.notes||'');
+  if(newNotes!==null){c.notes=newNotes;renderPriorityList();toast('✅ Notes updated');}
+}
+function exportPriorityCSV(){
+  const headers=['#','Vendor','Priority','Description','TCV','Renewal','Status','Procurement','ExCo','Responsible','Legal','Notes'];
+  const rows=_priorityData.map(c=>[c.num,c.vendor,c.priority,c.description,c.tcv,c.renewal?'Yes':'No',c.status,c.procurement,c.exco,c.responsible,c.legalStatus,c.notes].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='wio_contract_priority_'+Date.now()+'.csv';a.click();
+  toast('✅ CSV exported');
+}
+function exportContractsCSV(){
+  const headers=['Ref','Title','Vendor','Type','Status','Priority','Value','Submitted','Procurement Officer','Legal Reviewer','Responsible'];
+  const rows=_contracts.map(c=>[c.ref,c.title,c.vendor_name,c.contract_type,c.status,c.priority,c.value,c.submitted_at,c.procurement_officer,c.legal_reviewer,c.responsible_person].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='wio_contracts_'+Date.now()+'.csv';a.click();
+  toast('✅ CSV exported');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FILE HELPERS
+// ══════════════════════════════════════════════════════════════════════
+function trigUpload(id){ document.getElementById(id)?.click(); }
+function handleContractUpload(prefix, input){
+  if(!input.files||!input.files[0])return;
+  const f=input.files[0];
+  if(prefix==='nc') ncUploadedFile=f;
+  if(prefix==='pn') pnUploadedFile=f;
+  const s=f.size>1024*1024?(f.size/1024/1024).toFixed(1)+' MB':(f.size/1024).toFixed(0)+' KB';
+  document.getElementById(prefix+'-file-display').innerHTML=`<div class="uploaded-file"><div class="uf-icon">📄</div><div class="uf-info"><div class="uf-name">${f.name}</div><div class="uf-meta">${s}</div></div><button class="uf-rm" onclick="this.closest('.uploaded-file').remove();${prefix==='nc'?'ncUploadedFile=null':'pnUploadedFile=null'}">✕</button></div>`;
+}
+function toB64(f){return new Promise((r,e)=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.onerror=e;fr.readAsDataURL(f);});}
+
+// ══════════════════════════════════════════════════════════════════════
+// TOAST & UTILS
+// ══════════════════════════════════════════════════════════════════════
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+
+// Auto-refresh every 30s
+setInterval(()=>{if(role)refreshAll();},30000);
+</script>
+</body>
+</html>
