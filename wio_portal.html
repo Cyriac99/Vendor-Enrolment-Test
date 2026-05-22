@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wio Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0c10;--ink2:#2d3142;--muted:#6b7080;--faint:#a8adb8;
+  --bg:#f0f2f7;--surface:#fff;--border:#dde1eb;--border2:#c4c9d8;
+  --teal:#006b5e;--teal-light:#e0f5f2;--teal-mid:#00a896;
+  --blue:#1635b8;--blue-light:#e8edfc;--blue-mid:#2448d4;
+  --amber:#b86000;--amber-light:#fef3e2;
+  --red:#b51c1c;--red-light:#fdeaea;
+  --green:#1a6b3a;--green-light:#e4f5ec;
+  --purple:#5c35a0;--purple-light:#ede8fc;
+  --gold:#8b6914;--gold-light:#fdf3d0;
+  --r:8px;--r2:12px;
+  --sh:0 1px 3px rgba(10,12,16,.08),0 0 0 1px rgba(10,12,16,.04);
+  --sh2:0 4px 16px rgba(10,12,16,.10);
+  --sh3:0 12px 40px rgba(10,12,16,.14),0 0 0 1px rgba(10,12,16,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.6;min-height:100vh;}
+
+/* LANDING */
+#landing{position:fixed;inset:0;background:linear-gradient(135deg,#050810 0%,#0d1535 60%,#080e20 100%);display:flex;align-items:center;justify-content:center;z-index:1000;transition:opacity .4s;}
+#landing.out{opacity:0;pointer-events:none;}
+.landing-box{text-align:center;max-width:680px;width:92vw;}
+.landing-logo{font-size:36px;font-weight:700;color:#fff;letter-spacing:-1px;margin-bottom:6px;}
+.landing-logo span{color:#00a896;}
+.landing-sub{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;}
+.landing-desc{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:44px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
+.role-card{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:14px;padding:26px 18px;cursor:pointer;transition:all .2s;text-align:center;}
+.role-card:hover{transform:translateY(-2px);}
+.role-card.vendor:hover{border-color:#00a896;background:rgba(0,168,150,.1);}
+.role-card.procurement:hover{border-color:#6c8fff;background:rgba(36,72,212,.12);}
+.role-card.legal:hover{border-color:#c4a0f5;background:rgba(92,53,160,.12);}
+.role-card.responsible:hover{border-color:#f5c842;background:rgba(139,105,20,.12);}
+.rc-icon{font-size:32px;margin-bottom:10px;}
+.rc-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:5px;}
+.rc-sub{font-size:11px;color:rgba(255,255,255,.4);line-height:1.5;}
+
+/* TOPBAR */
+.topbar{background:var(--ink);height:52px;display:flex;align-items:center;padding:0 22px;gap:14px;position:sticky;top:0;z-index:200;}
+.tb-logo{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.4px;}
+.tb-logo span{color:#00a896;}
+.tb-sep{width:1px;height:18px;background:rgba(255,255,255,.15);}
+.tb-module{font-size:11px;color:rgba(255,255,255,.45);}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-role{font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;letter-spacing:.4px;font-family:'DM Mono',monospace;}
+.tb-role.vendor{background:rgba(0,168,150,.2);color:#00d4b8;}
+.tb-role.procurement{background:rgba(36,72,212,.2);color:#7a9fff;}
+.tb-role.legal{background:rgba(92,53,160,.2);color:#c4a0f5;}
+.tb-role.responsible{background:rgba(139,105,20,.2);color:#f5c842;}
+.tb-switch{font-size:11px;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 8px;border-radius:5px;}
+.tb-switch:hover{color:#fff;background:rgba(255,255,255,.08);}
+
+/* LAYOUT */
+.shell{display:flex;min-height:calc(100vh - 52px);}
+.sidebar{width:210px;min-width:210px;background:var(--surface);border-right:1px solid var(--border);padding:16px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;display:flex;flex-direction:column;}
+.sb-sect{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--faint);padding:0 16px 6px;margin-top:12px;}
+.sb-sect:first-child{margin-top:0;}
+.sb-nav{display:flex;flex-direction:column;gap:1px;padding:0 8px;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;color:var(--muted);transition:all .12s;}
+.sb-item:hover{background:var(--bg);color:var(--ink);}
+.sb-item.active{background:var(--blue-light);color:var(--blue-mid);font-weight:600;}
+.sb-item .si{font-size:14px;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;background:var(--red-light);color:var(--red);}
+.sb-div{height:1px;background:var(--border);margin:10px 14px;}
+.sb-foot{margin-top:auto;padding:12px 16px;}
+.main{flex:1;padding:22px 26px;overflow-y:auto;}
+
+/* CARDS & STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px;box-shadow:var(--sh);}
+.stat-num{font-size:26px;font-weight:700;letter-spacing:-1px;font-family:'DM Mono',monospace;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--muted);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);box-shadow:var(--sh);margin-bottom:14px;overflow:hidden;}
+.card-hdr{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.card-title{font-size:13px;font-weight:600;}
+.card-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.card-body{padding:16px 18px;}
+
+/* PAGE HEADER */
+.ph{margin-bottom:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.ph-title{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:3px;}
+.ph-sub{font-size:12px;color:var(--muted);}
+.ph-actions{display:flex;gap:8px;flex-shrink:0;align-items:center;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{background:var(--bg);padding:8px 11px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);}
+.tbl td{padding:10px 11px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#fafbfd;}
+.tv{font-weight:600;font-size:12px;}
+.ts{font-size:11px;color:var(--muted);}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;font-family:'DM Mono',monospace;white-space:nowrap;}
+.chip-draft{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.chip-submitted{background:var(--blue-light);color:var(--blue-mid);}
+.chip-review{background:var(--amber-light);color:var(--amber);}
+.chip-legal{background:var(--purple-light);color:var(--purple);}
+.chip-responsible{background:var(--gold-light);color:var(--gold);}
+.chip-approved{background:var(--green-light);color:var(--green);}
+.chip-rejected{background:var(--red-light);color:var(--red);}
+.chip-docusign{background:#e8f4fd;color:#0066cc;}
+.chip-completed{background:var(--green-light);color:var(--green);border:1px solid var(--green);}
+.chip-open{background:var(--green-light);color:var(--green);}
+.chip-closed{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.chip-onhold{background:var(--amber-light);color:var(--amber);}
+.chip-p1{background:#fff0ee;color:#9b2012;}
+.chip-p2{background:#fff8e6;color:#7a4f00;}
+.chip-p3{background:#eef4ff;color:#1a3a7a;}
+.chip-p4{background:#f2f2f0;color:#50504a;}
+.chip-vendor_action{background:#fff0ee;color:#9b2012;}
+
+/* BUTTONS */
+.btn{padding:7px 16px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:#1e2330;}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed;}
+.btn-secondary{background:var(--surface);color:var(--ink);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--bg);}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#005248;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{background:#125530;}
+.btn-danger{background:var(--red-light);color:var(--red);border:1px solid #f5b8b8;}
+.btn-danger:hover{background:#fcd8d8;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--bg);color:var(--ink);}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-purple:hover{background:#4a2a85;}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-sm{padding:5px 11px;font-size:11px;}
+.btn-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center;}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.span2{grid-column:span 2;}
+.field label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);}
+.field label .req{color:var(--red);margin-left:2px;}
+.field input,.field select,.field textarea{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:var(--bg);transition:all .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue-mid);background:var(--surface);box-shadow:0 0 0 3px rgba(36,72,212,.07);}
+.field textarea{resize:vertical;min-height:72px;}
+
+/* INFO BOXES */
+.ib{padding:10px 13px;border-radius:7px;font-size:12px;display:flex;gap:8px;margin-bottom:12px;}
+.ib-info{background:var(--blue-light);color:var(--blue-mid);}
+.ib-warn{background:var(--amber-light);color:var(--amber);}
+.ib-success{background:var(--green-light);color:var(--green);}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border2);border-radius:9px;padding:24px;text-align:center;cursor:pointer;background:var(--bg);position:relative;transition:all .2s;}
+.upload-zone:hover{border-color:var(--blue-mid);background:var(--blue-light);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.uf{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-top:8px;}
+.uf-info{flex:1;min-width:0;}
+.uf-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.uf-meta{font-size:10px;color:var(--muted);}
+
+/* DRAWER */
+.drawer-overlay{position:fixed;inset:0;background:rgba(10,12,16,.4);z-index:500;display:none;}
+.drawer-overlay.open{display:block;}
+.drawer{position:fixed;right:0;top:0;bottom:0;width:560px;max-width:96vw;background:var(--surface);box-shadow:var(--sh3);z-index:501;transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;}
+.drawer.open{transform:translateX(0);}
+.dh{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.dt{font-size:14px;font-weight:700;flex:1;}
+.db{flex:1;overflow-y:auto;padding:18px;}
+.df{padding:10px 0;border-bottom:1px solid var(--border);}
+.df-l{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
+.df-v{font-size:12px;font-weight:500;}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.dfoot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--bg);flex-wrap:wrap;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,12,16,.65);z-index:700;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:14px;width:640px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--sh3);}
+.mh{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.mt{font-size:16px;font-weight:700;}
+.mb{padding:20px 22px;}
+.mf{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--bg);border-radius:0 0 14px 14px;}
+
+/* PANELS */
+.view{display:none;width:100%;}
+.view.active{display:flex;}
+.sub{display:none;}
+.sub.active{display:block;}
+
+/* PRIORITY */
+.psect{margin-bottom:18px;}
+.ph1{background:#fff0ee;border:1px solid #f5b8ae;border-radius:8px 8px 0 0;padding:8px 12px;font-size:12px;font-weight:600;color:#9b2012;display:flex;align-items:center;gap:8px;}
+.ph2{background:#fff8e6;border:1px solid #f5d580;border-radius:8px 8px 0 0;padding:8px 12px;font-size:12px;font-weight:600;color:#7a4f00;display:flex;align-items:center;gap:8px;}
+.ph3{background:#eef4ff;border:1px solid #b3c9f5;border-radius:8px 8px 0 0;padding:8px 12px;font-size:12px;font-weight:600;color:#1a3a7a;display:flex;align-items:center;gap:8px;}
+.ph4{background:#f2f2f0;border:1px solid #d8d4cc;border-radius:8px 8px 0 0;padding:8px 12px;font-size:12px;font-weight:600;color:#50504a;display:flex;align-items:center;gap:8px;}
+.ptw{border:1px solid var(--border);border-radius:0 0 8px 8px;overflow:hidden;background:var(--surface);}
+
+/* FILTERS */
+.fbar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+.fsel{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--surface);}
+.fsel:focus{outline:none;border-color:var(--blue-mid);}
+.fsearch{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--surface);width:180px;}
+.pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);}
+.pill.on{background:var(--blue-mid);color:#fff;border-color:var(--blue-mid);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:7px;font-size:12px;font-weight:500;box-shadow:var(--sh3);transform:translateY(60px);opacity:0;transition:all .3s;z-index:9999;max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* ENROLMENT */
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+.radio-group{display:flex;gap:8px;flex-wrap:wrap;}
+.radio-opt{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;border:1.5px solid var(--border);cursor:pointer;font-size:12px;font-weight:500;background:var(--bg);}
+.radio-opt:hover,.radio-opt.selected{border-color:var(--blue-mid);background:var(--blue-light);color:var(--blue-mid);}
+.radio-opt input{display:none;}
+.vtype-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.vtype-card{border:2px solid var(--border);border-radius:9px;padding:14px;cursor:pointer;transition:all .15s;background:var(--bg);}
+.vtype-card:hover,.vtype-card.selected{border-color:var(--blue-mid);background:var(--blue-light);}
+.vtype-card .vt-icon{font-size:20px;margin-bottom:6px;}
+.vtype-card .vt-title{font-size:13px;font-weight:600;}
+.vtype-card .vt-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.doc-zone{border:2px dashed var(--border2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:var(--bg);position:relative;}
+.doc-zone:hover{border-color:var(--blue-mid);background:var(--blue-light);}
+.doc-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.doc-zone-icon{font-size:22px;margin-bottom:5px;}
+.doc-zone-text{font-size:11px;color:var(--muted);}
+.doc-zone-text strong{color:var(--blue-mid);}
+.doc-file{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:6px;border:1px solid var(--border);background:var(--surface);margin-top:7px;}
+.doc-file-icon{font-size:16px;}
+.doc-file-info{flex:1;min-width:0;}
+.doc-file-name{font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.doc-file-status{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;}
+.doc-file-status.checking{background:var(--amber-light);color:var(--amber);}
+.doc-file-status.verified{background:var(--green-light);color:var(--green);}
+.esc-table{width:100%;border-collapse:collapse;font-size:12px;}
+.esc-table th{background:var(--bg);padding:7px 9px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);}
+.esc-table td{padding:8px 9px;border-bottom:1px solid var(--border);}
+.esc-table tr:last-child td{border-bottom:none;}
+.esc-table input,.esc-table select{border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-family:'DM Sans',sans-serif;font-size:12px;width:100%;background:var(--bg);}
+.add-row-link{color:var(--blue-mid);font-size:12px;cursor:pointer;padding:7px 0;display:inline-block;font-weight:500;}
+.val-item{display:flex;gap:10px;padding:12px 14px;border-radius:7px;margin-bottom:6px;font-size:12px;}
+.val-item.error{background:var(--red-light);border:1px solid #f5b8b8;}
+.val-item.warning{background:var(--amber-light);border:1px solid #f5d090;}
+.val-item.pass{background:var(--green-light);border:1px solid #a8ddb8;}
+.val-item-icon{font-size:14px;flex-shrink:0;}
+.val-item-body{flex:1;}
+.val-item-title{font-weight:700;margin-bottom:2px;}
+.val-item-title.error{color:var(--red);}
+.val-item-title.warning{color:var(--amber);}
+.val-item-title.pass{color:var(--green);}
+.val-item-detail{font-size:11px;color:var(--ink2);line-height:1.5;}
+.fix-widget{margin-top:10px;padding:14px;background:var(--teal-light);border:2px solid var(--teal);border-radius:10px;}
+.fw-label{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--teal);margin-bottom:6px;display:block;}
+.fw-header{font-size:13px;font-weight:700;color:var(--teal);margin-bottom:4px;}
+.fw-sub{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.fw-drop{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border:2px dashed var(--teal);border-radius:9px;cursor:pointer;background:#fff;font-size:12px;font-weight:600;color:var(--teal);}
+.fw-status{display:none;font-size:12px;font-weight:600;margin-top:8px;padding:7px 10px;border-radius:6px;}
+.fw-status.ok{background:var(--green-light);color:var(--green);}
+.fw-status.err{background:var(--red-light);color:var(--red);}
+.fw-status.checking{background:var(--amber-light);color:var(--amber);}
+.field input.ocr-filled{border-color:var(--teal)!important;background:#edfaf8!important;}
+.ocr-banner{background:linear-gradient(135deg,var(--teal-light),var(--blue-light));border:1px solid var(--teal);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;}
+.ob-icon{font-size:24px;}
+.ob-title{font-size:13px;font-weight:700;color:var(--teal);margin-bottom:2px;}
+.ob-sub{font-size:11px;color:var(--ink2);}
+.ob-btn{margin-left:auto;padding:7px 14px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;}
+
+/* OCR OVERLAY */
+.ocr-ov{position:fixed;inset:0;background:rgba(10,12,16,.72);z-index:700;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.ocr-ov.hidden{display:none;}
+.ocr-box{background:var(--surface);border-radius:16px;width:620px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:var(--sh3);}
+.ocr-top{padding:22px 22px 0;}
+.ocr-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.ocr-sub{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.ocr-key-box{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;margin-bottom:14px;}
+.ocr-key-row{display:flex;gap:7px;align-items:center;margin-top:7px;}
+.ocr-key-input{flex:1;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:11px;background:var(--surface);}
+.ocr-drop{border:2.5px dashed var(--border2);border-radius:11px;padding:32px 20px;text-align:center;cursor:pointer;background:var(--bg);position:relative;}
+.ocr-drop:hover,.ocr-drop.drag{border-color:var(--teal);background:var(--teal-light);}
+.ocr-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.ocr-drop-icon{font-size:38px;margin-bottom:10px;}
+.ocr-drop-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.ocr-drop-hint{font-size:11px;color:var(--muted);}
+.ocr-drop-hint strong{color:var(--teal);}
+.ofi{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface);margin-top:7px;}
+.ofi-info{flex:1;min-width:0;}
+.ofi-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ofi-meta{font-size:10px;color:var(--muted);}
+.ofi-status{font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap;}
+.ofi-status.q{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ofi-status.r{background:var(--amber-light);color:var(--amber);}
+.ofi-status.d{background:var(--green-light);color:var(--green);}
+.ofi-status.e{background:var(--red-light);color:var(--red);}
+.ocr-prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:14px 0 6px;}
+.ocr-prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue-mid));border-radius:2px;transition:width .4s;}
+.ocr-prev-hdr{padding:9px 14px;background:var(--teal-light);color:var(--teal);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:space-between;}
+.ofr{display:flex;align-items:center;gap:10px;padding:7px 14px;border-top:1px solid var(--border);background:var(--surface);}
+.ofr-key{font-size:11px;color:var(--muted);min-width:160px;font-weight:500;}
+.ofr-val{font-size:11px;font-weight:600;font-family:'DM Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ocr-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;background:var(--bg);border-radius:0 0 16px 16px;margin-top:18px;}
+
+/* REDLINE */
+.rl-container{border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:10px;}
+.rl-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;}
+.rl-hdr.added{background:#e4f5ec;border-bottom:1px solid #a8ddb8;color:var(--green);}
+.rl-hdr.removed{background:var(--red-light);border-bottom:1px solid #f5b8b8;color:var(--red);}
+.rl-hdr.modified{background:var(--amber-light);border-bottom:1px solid #f5d090;color:var(--amber);}
+.rl-hdr.summary{background:var(--blue-light);border-bottom:1px solid #b3c9f5;color:var(--blue-mid);}
+.rl-item{padding:10px 14px;border-top:1px solid var(--border);background:var(--surface);font-size:12px;}
+.rl-clause{font-weight:600;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.rl-before{color:var(--red);text-decoration:line-through;padding:4px 8px;background:var(--red-light);border-radius:4px;margin-bottom:4px;}
+.rl-after{color:var(--green);padding:4px 8px;background:var(--green-light);border-radius:4px;}
+.rl-new{color:var(--green);padding:4px 8px;background:var(--green-light);border-radius:4px;}
+.rl-del{color:var(--red);padding:4px 8px;background:var(--red-light);border-radius:4px;text-decoration:line-through;}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px 20px;color:var(--faint);}
+.empty-icon{font-size:32px;margin-bottom:8px;}
+.empty-title{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:4px;}
+.empty-sub{font-size:12px;}
+
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.sec-div{display:flex;align-items:center;gap:8px;margin:16px 0 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--faint);}
+.sec-div::before,.sec-div::after{content:'';flex:1;height:1px;background:var(--border);}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing">
+  <div class="landing-box">
+    <div class="landing-logo">Wio <span>Portal</span></div>
+    <div class="landing-sub">Contract Management · Vendor Enrolment</div>
+    <div class="landing-desc">Wio Bank PJSC · Procurement · Legal · Operations · Live</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;">Select your role to continue</div>
+    <div class="role-grid">
+      <div class="role-card vendor" onclick="selectRole('vendor')">
+        <div class="rc-icon">🏢</div>
+        <div class="rc-title">Vendor</div>
+        <div class="rc-sub">Submit contracts, register your company, track status</div>
+      </div>
+      <div class="role-card procurement" onclick="selectRole('procurement')">
+        <div class="rc-icon">📋</div>
+        <div class="rc-title">Procurement</div>
+        <div class="rc-sub">Contract priority list, initiate reviews, manage pipeline</div>
+      </div>
+      <div class="role-card legal" onclick="selectRole('legal')">
+        <div class="rc-icon">⚖️</div>
+        <div class="rc-title">Legal</div>
+        <div class="rc-sub">Review contracts, upload redlines, AI analysis</div>
+      </div>
+      <div class="role-card responsible" onclick="selectRole('responsible')">
+        <div class="rc-icon">✍️</div>
+        <div class="rc-title">Responsible Person</div>
+        <div class="rc-sub">Review scope, IT SLA, approve for DocuSign</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.2);">Wio Bank PJSC · Kissflow Contract Management · Live</div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar" style="display:none">
+  <div class="tb-logo">Wio <span>Portal</span></div>
+  <div class="tb-sep"></div>
+  <div class="tb-module" id="tb-module">Portal</div>
+  <div class="tb-right">
+    <div class="tb-role" id="tb-role">VENDOR</div>
+    <div class="tb-switch" onclick="switchRole()">Switch role ↗</div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="shell" id="shell" style="display:none">
+
+<!-- ══ VENDOR ══ -->
+<div class="view" id="view-vendor">
+  <aside class="sidebar">
+    <div class="sb-sect">Contracts</div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="vTab('vd')"><span class="si">📊</span> Dashboard</div>
+      <div class="sb-item" onclick="vTab('vc')"><span class="si">📄</span> My Contracts <span class="sb-badge" id="vcbadge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="vTab('vn')"><span class="si">➕</span> Submit Contract</div>
+    </div>
+    <div class="sb-div"></div>
+    <div class="sb-sect">Vendor Enrolment</div>
+    <div class="sb-nav">
+      <div class="sb-item" onclick="vTab('ve')"><span class="si">🏢</span> Enrol / Register</div>
+      <div class="sb-item" onclick="showOCR()"><span class="si">📄</span> Smart Doc Reader</div>
+    </div>
+    <div class="sb-foot"><div style="font-size:10px;color:var(--muted);text-align:center">Live · Auto-refresh 30s</div></div>
+  </aside>
+  <main class="main">
+    <!-- vendor dashboard -->
+    <div class="sub active" id="vd">
+      <div class="ph"><div><div class="ph-title">Vendor Dashboard</div><div class="ph-sub">Your contracts and registration</div></div><div class="ph-actions"><button class="btn btn-teal btn-sm" onclick="vTab('vn')">+ Submit Contract</button></div></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="vs-total">0</div><div class="stat-lbl">Total</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="vs-pending">0</div><div class="stat-lbl">Pending</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="vs-action">0</div><div class="stat-lbl">Action Required</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="vs-done">0</div><div class="stat-lbl">Completed</div></div>
+      </div>
+      <div class="card"><div class="card-hdr"><div class="card-icon" style="background:var(--amber-light)">⏳</div><div><div class="card-title">Action Required</div></div></div><div style="padding:0" id="vd-action"></div></div>
+      <div class="card"><div class="card-hdr"><div class="card-icon" style="background:var(--blue-light)">📄</div><div><div class="card-title">Recent Contracts</div></div></div><div style="padding:0" id="vd-recent"></div></div>
+    </div>
+    <!-- vendor contracts -->
+    <div class="sub" id="vc">
+      <div class="ph"><div><div class="ph-title">My Contracts</div></div><div class="ph-actions"><button class="btn btn-teal btn-sm" onclick="vTab('vn')">+ Submit New</button></div></div>
+      <div class="fbar"><select class="fsel" id="vc-sf" onchange="renderVC()"><option value="">All Status</option><option value="submitted">Submitted</option><option value="review">Under Review</option><option value="legal">Legal Review</option><option value="vendor_action">Action Required</option><option value="approved">Approved</option></select><input class="fsearch" type="text" id="vc-sq" placeholder="Search…" oninput="renderVC()"></div>
+      <div class="card" style="padding:0"><div id="vc-list"></div></div>
+    </div>
+    <!-- submit contract -->
+    <div class="sub" id="vn">
+      <div class="ph"><div><div class="ph-title">Submit New Contract</div></div></div>
+      <div class="card"><div class="card-hdr"><div class="card-icon" style="background:var(--teal-light)">📄</div><div><div class="card-title">Contract Details</div></div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="field span2"><label>Contract Title <span class="req">*</span></label><input type="text" id="nc-title" placeholder="e.g. Annual Software Maintenance Agreement"></div>
+          <div class="field"><label>Contract Type <span class="req">*</span></label><select id="nc-type"><option value="">— Select —</option><option>Renewal</option><option>New Contract</option><option>Amendment</option><option>SLA Agreement</option><option>NDA</option><option>MSA</option><option>SOW</option></select></div>
+          <div class="field"><label>Value (AED)</label><input type="number" id="nc-value" placeholder="0"></div>
+          <div class="field"><label>Your Company <span class="req">*</span></label><input type="text" id="nc-vendor" placeholder="Company name"></div>
+          <div class="field"><label>Contact Email <span class="req">*</span></label><input type="email" id="nc-email" placeholder="email@company.com"></div>
+          <div class="field"><label>Start Date</label><input type="date" id="nc-start"></div>
+          <div class="field"><label>End Date</label><input type="date" id="nc-end"></div>
+          <div class="field span2"><label>Description / Scope</label><textarea id="nc-desc" placeholder="Brief description…"></textarea></div>
+        </div>
+        <div class="sec-div">Upload Contract</div>
+        <div class="upload-zone" onclick="document.getElementById('nc-file').click()">
+          <input type="file" id="nc-file" accept=".docx,.pdf" onchange="handleCUpload('nc',this)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+          <div style="font-size:28px;margin-bottom:8px">📄</div>
+          <div style="font-size:12px;color:var(--muted)"><strong style="color:var(--blue-mid)">Click to upload</strong> · Word (.docx) or PDF</div>
+        </div>
+        <div id="nc-fdisp"></div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="submitContract()">Submit to Procurement →</button><button class="btn btn-secondary" onclick="vTab('vd')">Cancel</button></div>
+      </div></div>
+    </div>
+    <!-- vendor enrolment -->
+    <div class="sub" id="ve">
+      <div class="ph"><div><div class="ph-title">Vendor Enrolment</div><div class="ph-sub">Register your company with Wio Bank Procurement</div></div><div class="ph-actions"><button class="btn btn-teal btn-sm" onclick="showOCR()">📄 Smart Doc Reader</button></div></div>
+      <div class="ocr-banner" id="ocr-banner" style="display:none">
+        <div class="ob-icon">✨</div>
+        <div><div class="ob-title">Form auto-filled from documents</div><div class="ob-sub" id="ocr-banner-sub">Review and complete any missing fields.</div></div>
+        <button class="ob-btn" onclick="showOCR()">Upload more</button>
+      </div>
+      <!-- Stepper -->
+      <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh)">
+        <div id="estep-0" onclick="eGoStep(0)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;border-right:1px solid var(--border);background:var(--blue-light);color:var(--blue-mid);font-weight:600"><div id="ewsn-0" style="width:20px;height:20px;border-radius:5px;background:var(--blue-mid);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">1</div><span>COI</span></div>
+        <div id="estep-1" onclick="eGoStep(1)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;border-right:1px solid var(--border);opacity:.4;pointer-events:none"><div id="ewsn-1" style="width:20px;height:20px;border-radius:5px;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">2</div><span>General</span></div>
+        <div id="estep-2" onclick="eGoStep(2)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;border-right:1px solid var(--border);opacity:.4;pointer-events:none"><div id="ewsn-2" style="width:20px;height:20px;border-radius:5px;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">3</div><span>Company</span></div>
+        <div id="estep-3" onclick="eGoStep(3)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;border-right:1px solid var(--border);opacity:.4;pointer-events:none"><div id="ewsn-3" style="width:20px;height:20px;border-radius:5px;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">4</div><span>Docs</span></div>
+        <div id="estep-4" onclick="eGoStep(4)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;border-right:1px solid var(--border);opacity:.4;pointer-events:none"><div id="ewsn-4" style="width:20px;height:20px;border-radius:5px;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">5</div><span>Escalation</span></div>
+        <div id="estep-5" onclick="eGoStep(5)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;opacity:.4;pointer-events:none"><div id="ewsn-5" style="width:20px;height:20px;border-radius:5px;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">6</div><span>Review</span></div>
+      </div>
+      <!-- STEP 0: COI -->
+      <div class="step-panel active" id="ep-0">
+        <div class="page-header"><div class="ph-left"><div class="page-title">Conflict of Interest</div><div class="page-sub">Declare any conflicts before registration proceeds</div></div></div>
+        <!-- OCR Quick Launch -->
+        <div class="card" style="background:linear-gradient(135deg,#e0f5f2,#e8edfc);border-color:var(--teal);margin-bottom:14px">
+          <div class="card-body" style="display:flex;align-items:center;gap:16px;padding:16px 18px">
+            <div style="font-size:36px;flex-shrink:0">📄</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:3px">Upload documents to auto-fill the form</div>
+              <div style="font-size:12px;color:var(--ink2)">Drop your Trade License, VAT Certificate, Bank Letter and more — AI reads them and fills every field automatically.</div>
+            </div>
+            <button class="btn btn-teal" onclick="showOCR()" style="flex-shrink:0;padding:10px 20px;font-size:13px">📄 Open Doc Reader</button>
+          </div>
+        </div>
+
+        <div id="coi-alert" class="coi-alert"><div class="coi-alert-title">⚠ Conflict Identified — Compliance Review Required</div><div class="coi-alert-body">Registration is paused. Compliance will be notified before you can proceed.</div></div>
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:var(--amber-light)">⚖</div><div><div class="card-heading">COI Assessment</div><div class="card-subheading">Required — Kissflow vendor onboarding</div></div></div>
+          <div class="card-body">
+            <div class="info-box info"><span class="ib-icon">ℹ</span><span>Disclose any conflicts including personal relationships with Wio staff, financial interests in other institutions, positions conflicting with your vendor role, or acceptance of gifts that could influence transactions with Wio.</span></div>
+            <div class="field" style="margin-bottom:12px">
+              <label>Conflict of interest to disclose? <span class="req">*</span></label>
+              <div class="radio-group">
+                <label class="radio-opt" id="coi-no"><input type="radio" name="coi" value="none" onchange="handleCOI('none')">✓ No known conflicts</label>
+                <label class="radio-opt" id="coi-yes"><input type="radio" name="coi" value="yes" onchange="handleCOI('yes')">⚠ Yes, I have a conflict</label>
+              </div>
+            </div>
+            <div id="coi-details" style="display:none">
+              <div class="field"><label>Describe the conflict <span class="req">*</span></label><textarea id="coi-text" placeholder="Describe in detail…"></textarea></div>
+            </div>
+            <div class="btn-row"><button class="btn btn-primary" id="coi-btn" onclick="submitCOI()" disabled>Continue →</button></div>
+          </div>
+        </div>
+      </div>
+<!-- STEP 1: GENERAL -->
+      <div class="step-panel" id="ep-1">
+        <div class="page-header"><div class="ph-left"><div class="page-title">General Details</div><div class="page-sub">Vendor classification and initiator</div></div></div>
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:var(--blue-light)">🏢</div><div><div class="card-heading">Classification</div></div></div>
+          <div class="card-body">
+            <div class="sec-div">Domestic or International</div>
+            <div class="vtype-grid">
+              <div class="vtype-card" id="vt-dom" onclick="selectDomInt('domestic')"><div class="vt-icon">🇦🇪</div><div class="vt-title">Domestic Vendor</div><div class="vt-sub">UAE entity · Trade License + VAT + Bank auth</div></div>
+              <div class="vtype-card" id="vt-intl" onclick="selectDomInt('international')"><div class="vt-icon">🌍</div><div class="vt-title">International Vendor</div><div class="vt-sub">Foreign entity · MoA / CoI + Bank details</div></div>
+            </div>
+            <div class="sec-div">Vendor Type</div>
+            <div class="form-grid">
+              <div class="field"><label>Type of Vendor <span class="req">*</span></label><select id="vendor-type" onchange="onVendorType()"><option value="">— Select —</option><option>Marketing</option><option>Technology</option><option>Facilities</option><option>Professional Services</option><option>Outsourcing</option><option>Critical Vendor</option><option>Other</option></select></div>
+              <div class="field"><label>Nature of Business <span class="req">*</span></label><select id="nature-biz"><option value="">— Select —</option><option>Services</option><option>Goods</option><option>Both</option></select></div>
+              <div class="field"><label>Sector</label><select id="sector-sel"><option>Private Sector</option><option>Government Entity</option><option>Semi-Government</option><option>Non-Profit</option></select></div>
+              <div class="field"><label>CSP Vendor?</label><select id="csp-sel"><option>No</option><option>Yes</option></select></div>
+            </div>
+            <div id="outsource-warn" style="display:none"><div class="info-box warn"><span class="ib-icon">🔍</span><span><strong>Outsourcing/Critical:</strong> Refinitiv World Check 1 screening required before stage 1 approval.</span></div></div>
+            <div class="sec-div">Initiator</div>
+            <div class="form-grid">
+              <div class="field"><label>Initiator Name <span class="req">*</span></label><input type="text" id="init-name"></div>
+              <div class="field"><label>Initiator Email <span class="req">*</span></label><input type="email" id="init-email"></div>
+            </div>
+            <div class="sec-div">ESG</div>
+            <div class="field"><label>ESG evaluation completed?</label><select id="esg-sel"><option>Not Applicable</option><option>Yes — within last 12 months</option><option>Yes — over 12 months ago</option><option>No</option></select></div>
+            <div class="btn-row"><button class="btn btn-secondary" onclick="eGoStep(0)">← Back</button><button class="btn btn-primary" onclick="submitGeneral()">Next →</button></div>
+          </div>
+        </div>
+      </div>
+<!-- STEP 2: COMPANY & BANK -->
+      <div class="step-panel" id="ep-2">
+        <div class="page-header"><div class="ph-left"><div class="page-title">Company & Bank Details</div><div class="page-sub">Registered company information and banking details</div></div></div>
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:var(--teal-light)">🔐</div><div><div class="card-heading">Kissflow Credentials</div></div></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="field"><label>Login User ID <span class="req">*</span></label><input type="email" id="kf-userid" placeholder="lowercase email"></div>
+              <div class="field"><label>Login Username <span class="req">*</span></label><input type="text" id="kf-username"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:var(--purple-light)">🏢</div><div><div class="card-heading">Company Details</div></div></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="field span2">
+                <label>Company Name <span class="req">*</span>
+                  <span id="ai-classify-btn" onclick="aiClassifyVendor()" style="margin-left:8px;background:var(--teal-light);color:var(--teal);padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:.3px;display:inline-flex;align-items:center;gap:4px">✨ AI Suggest Type</span>
+                  <span id="ai-classify-loading" style="display:none;margin-left:8px;font-size:10px;color:var(--muted)">Searching…</span>
+                </label>
+                <input type="text" id="company-name" placeholder="Enter company name, then click ✨ AI Suggest Type" onkeydown="if(event.key==='Enter')aiClassifyVendor()">
+              </div>
+              <div class="field span2"><label>Ultimate Beneficial Owner <span class="req">*</span></label><input type="text" id="company-owner"></div>
+              <div class="field"><label>Building / Block <span class="req">*</span></label><input type="text" id="addr-building"></div>
+              <div class="field"><label>Street / Area <span class="req">*</span></label><input type="text" id="addr-street"></div>
+              <div class="field"><label>City <span class="req">*</span></label><input type="text" id="addr-city"></div>
+              <div class="field"><label>State / Province</label><input type="text" id="addr-state"></div>
+              <div class="field"><label>Postal Code</label><input type="text" id="addr-zip"></div>
+              <div class="field"><label>Country <span class="req">*</span></label><input type="text" id="addr-country" value="United Arab Emirates"></div>
+              <div class="field"><label>Company Email <span class="req">*</span></label><input type="email" id="company-email"></div>
+              <div class="field"><label>Website</label><input type="url" id="company-website" placeholder="https://"></div>
+              <div class="field"><label>Phone</label><input type="tel" id="company-phone"></div>
+              <div class="field"><label>Main Jurisdiction</label><input type="text" id="jurisdiction"></div>
+              <div class="field"><label>Parent Organization?</label><select id="parent-org-sel" onchange="toggleParent()"><option>No</option><option>Yes</option></select></div>
+              <div class="field" id="parent-field" style="display:none"><label>Parent Org Name</label><input type="text" id="parent-org-name"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:var(--green-light)">🏦</div><div><div class="card-heading">Bank Details</div></div></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="field"><label>Bank Name <span class="req">*</span></label><input type="text" id="bank-name"></div>
+              <div class="field"><label>Account Number <span class="req">*</span></label><input type="text" id="bank-acct"></div>
+              <div class="field"><label>Branch Name</label><input type="text" id="bank-branch"></div>
+              <div class="field"><label>Branch Location</label><input type="text" id="bank-branch-loc"></div>
+              <div class="field"><label>Beneficiary Name <span class="req">*</span></label><input type="text" id="bank-beneficiary"></div>
+              <div class="field"><label>SWIFT Code</label><input type="text" id="bank-swift"></div>
+              <div class="field"><label>Bank Country</label><input type="text" id="bank-country" value="United Arab Emirates"></div>
+            </div>
+            <div class="sec-div">IBAN & Currency</div>
+            <div id="iban-rows">
+              <div class="iban-row"><div class="field" style="max-width:80px"><label>Currency</label><select><option>AED</option><option>USD</option><option>EUR</option></select></div><div class="field"><label>IBAN (Primary)</label><input type="text" id="iban-aed" placeholder="AE…"></div><div class="field"><label>IBAN (FCY)</label><input type="text" id="iban-fcy" placeholder="optional"></div></div>
+            </div>
+            <span class="add-row-link" onclick="addIBANRow()">+ Add currency row</span>
+            <div id="trn-section">
+              <div class="sec-div">Tax & License (Domestic)</div>
+              <div class="form-grid">
+                <div class="field"><label>TRN Number <span class="req">*</span></label><input type="text" id="trn-num" placeholder="100xxxxxxxxx"></div>
+                <div class="field"><label>Commercial License No. <span class="req">*</span></label><input type="text" id="lic-num"></div>
+                <div class="field"><label>License Start Date</label><input type="date" id="lic-start"></div>
+                <div class="field"><label>License Expiry Date</label><input type="date" id="lic-expiry"></div>
+              </div>
+            </div>
+            <div class="btn-row"><button class="btn btn-secondary" onclick="eGoStep(1)">← Back</button><button class="btn btn-primary" onclick="eGoStep(3)">Next →</button></div>
+          </div>
+        </div>
+      </div>
+<!-- STEP 3: DOCUMENTS -->
+      <div class="step-panel" id="ep-3">
+        <div class="page-header"><div class="ph-left"><div class="page-title">Document Upload</div><div class="page-sub" id="doc-sub">Auto-verified upon upload</div></div></div>
+        <div id="dom-docs">
+          <div class="card"><div class="card-header"><div class="card-icon" style="background:var(--teal-light)">📋</div><div><div class="card-heading">Commercial License</div><div class="card-subheading">validity · expiry · license number</div></div><div class="chip chip-pending" id="cl-chip" style="margin-left:auto">PENDING</div></div><div class="card-body"><div class="doc-zone" onclick="trigUp('cl-up')"><input type="file" id="cl-up" accept=".pdf,.jpg,.png" onchange="handleDoc('cl',this)"><div class="doc-zone-icon">📄</div><div class="doc-zone-text"><strong>Click to upload</strong> · PDF, JPG, PNG</div></div><div id="cl-fd"></div><div id="cl-vp"></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-icon" style="background:var(--amber-light)">🧾</div><div><div class="card-heading">VAT / TRN Certificate</div><div class="card-subheading">TRN format · certificate validity</div></div><div class="chip chip-pending" id="vat-chip" style="margin-left:auto">PENDING</div></div><div class="card-body"><div class="doc-zone" onclick="trigUp('vat-up')"><input type="file" id="vat-up" accept=".pdf,.jpg,.png" onchange="handleDoc('vat',this)"><div class="doc-zone-icon">📄</div><div class="doc-zone-text"><strong>Click to upload</strong></div></div><div id="vat-fd"></div><div id="vat-vp"></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-icon" style="background:var(--green-light)">🏦</div><div><div class="card-heading">Bank Authorisation Letter</div><div class="card-subheading">bank name · IBAN · beneficiary</div></div><div class="chip chip-pending" id="bank-chip" style="margin-left:auto">PENDING</div></div><div class="card-body"><div class="doc-zone" onclick="trigUp('bank-up')"><input type="file" id="bank-up" accept=".pdf,.jpg,.png" onchange="handleDoc('bank',this)"><div class="doc-zone-icon">📄</div><div class="doc-zone-text"><strong>Click to upload</strong></div></div><div id="bank-fd"></div><div id="bank-vp"></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-icon" style="background:var(--purple-light)">📝</div><div><div class="card-heading">Proof of Signing Authority</div></div><div class="chip chip-pending" id="poa-chip" style="margin-left:auto">PENDING</div></div><div class="card-body"><div class="doc-zone" onclick="trigUp('poa-up')"><input type="file" id="poa-up" accept=".pdf,.jpg,.png" onchange="handleDoc('poa',this)"><div class="doc-zone-icon">📄</div><div class="doc-zone-text"><strong>Click to upload</strong></div></div><div id="poa-fd"></div><div id="poa-vp"></div></div></div>
+        </div>
+        <div id="intl-docs" style="display:none">
+          <div class="info-box info"><span class="ib-icon">🌍</span><span>International Vendor: MoA or Certificate of Incorporation + Bank Auth Letter required.</span></div>
+          <div class="card"><div class="card-header"><div class="card-icon" style="background:var(--blue-light)">📜</div><div><div class="card-heading">MoA / Certificate of Incorporation</div></div><div class="chip chip-pending" id="moa-chip" style="margin-left:auto">PENDING</div></div><div class="card-body"><div class="doc-zone" onclick="trigUp('moa-up')"><input type="file" id="moa-up" accept=".pdf,.jpg,.png" onchange="handleDoc('moa',this)"><div class="doc-zone-icon">📄</div><div class="doc-zone-text"><strong>Click to upload</strong></div></div><div id="moa-fd"></div><div id="moa-vp"></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-icon" style="background:var(--green-light)">🏦</div><div><div class="card-heading">Bank Authorisation Letter</div></div><div class="chip chip-pending" id="ibank-chip" style="margin-left:auto">PENDING</div></div><div class="card-body"><div class="doc-zone" onclick="trigUp('ibank-up')"><input type="file" id="ibank-up" accept=".pdf,.jpg,.png" onchange="handleDoc('ibank',this)"><div class="doc-zone-icon">📄</div><div class="doc-zone-text"><strong>Click to upload</strong></div></div><div id="ibank-fd"></div><div id="ibank-vp"></div></div></div>
+        </div>
+        <div id="doc-ok" style="display:none;margin-top:8px"><div class="info-box success pop-in"><span class="ib-icon">✅</span><span><strong>All documents verified.</strong> Proceed to Escalation Matrix.</span></div></div>
+        <div class="btn-row"><button class="btn btn-secondary" onclick="eGoStep(2)">← Back</button><button class="btn btn-primary" id="doc-next" onclick="eGoStep(4)" disabled>Next →</button></div>
+      </div>
+<!-- STEP 4: ESCALATION -->
+      <div class="step-panel" id="ep-4">
+        <div class="page-header"><div class="ph-left"><div class="page-title">Escalation Matrix</div><div class="page-sub">Company liaisons and contacts</div></div></div>
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:var(--teal-light)">👥</div><div><div class="card-heading">Company Liaisons</div></div></div>
+          <div class="card-body">
+            <table class="esc-table"><thead><tr><th>Name</th><th>Level</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+            <tbody id="esc-tbody"><tr><td><input type="text" id="esc-n0"></td><td><select><option>Accounts Manager</option><option>Operational Escalation</option><option>Finance Escalation</option><option>Management Escalation</option></select></td><td><input type="email" id="esc-e0"></td><td><input type="tel" id="esc-p0"></td><td><button class="doc-remove" onclick="this.closest('tr').remove()">✕</button></td></tr></tbody></table>
+            <span class="add-row-link" onclick="addEscRow()">+ Add contact</span>
+            <div class="btn-row"><button class="btn btn-secondary" onclick="eGoStep(3)">← Back</button><button class="btn btn-primary" onclick="eGoStep(5)">Review & Submit →</button></div>
+          </div>
+        </div>
+      </div>
+<!-- STEP 5: REVIEW & SUBMIT -->
+      <div class="step-panel" id="ep-5">
+        <div class="page-header"><div class="ph-left"><div class="page-title">Review & Submit</div><div class="page-sub">AI validation agent checks all your data before submission</div></div></div>
+
+        <!-- VALIDATION PANEL -->
+        <div class="card" id="validation-card">
+          <div class="card-header">
+            <div class="card-icon" style="background:var(--blue-light)" id="val-icon">🤖</div>
+            <div>
+              <div class="card-heading" id="val-heading">Validation Agent</div>
+              <div class="card-subheading" id="val-subheading">Click "Run Validation" to check all fields before submitting</div>
+            </div>
+            <div id="val-status-chip" style="margin-left:auto"></div>
+          </div>
+          <div class="card-body">
+            <!-- Loading state -->
+            <div id="val-loading" style="display:none;text-align:center;padding:24px">
+              <div style="font-size:32px;margin-bottom:10px;animation:spin 1s linear infinite;display:inline-block">⚙️</div>
+              <div style="font-size:13px;font-weight:600;margin-bottom:4px" id="val-loading-text">Running validation agent…</div>
+              <div style="font-size:11px;color:var(--muted)" id="val-loading-sub">Checking fields, validating IBAN, verifying dates…</div>
+            </div>
+            <!-- Results -->
+            <div id="val-results" style="display:none">
+              <div id="val-errors-section" style="display:none">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--red);margin-bottom:8px">🚫 Critical Errors — Must Fix Before Submitting</div>
+                <div id="val-errors-list"></div>
+              </div>
+              <div id="val-warnings-section" style="display:none;margin-top:12px">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--amber);margin-bottom:8px">⚠ Warnings — Review Recommended</div>
+                <div id="val-warnings-list"></div>
+              </div>
+              <div id="val-passed-section" style="display:none;margin-top:12px">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--green);margin-bottom:8px">✓ Passed Checks</div>
+                <div id="val-passed-list"></div>
+              </div>
+            </div>
+            <!-- Initial run button -->
+            <div id="val-run-wrap">
+              <button class="btn btn-primary" onclick="runValidationAgent()" style="width:100%;justify-content:center;padding:12px">🤖 Run Validation Agent</button>
+              <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Checks: license expiry · TRN format · IBAN validity · name matching · COI · date consistency</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon" style="background:var(--green-light)">📋</div><div><div class="card-heading">Registration Summary</div><div class="card-subheading">Please verify all details are correct</div></div></div>
+          <div class="card-body">
+            <div id="review-content"></div>
+            <div class="info-box warn"><span class="ib-icon">⚠</span><span>Once submitted, your registration will be sent to the Wio Procurement team for review. You will be contacted if any corrections are required.</span></div>
+            <div class="btn-row">
+              <button class="btn btn-secondary" onclick="eGoStep(4)">← Back</button>
+              <button class="btn btn-success" id="submit-btn" onclick="submitVendor()" disabled style="opacity:.4;cursor:not-allowed">✓ Submit to Procurement</button>
+              <span id="submit-hint" style="font-size:11px;color:var(--muted);align-self:center">Run validation first</span>
+            </div>
+            <!-- OVERRIDE SECTION — shown only when there are errors -->
+            <div id="override-section" style="display:none;margin-top:12px;padding:14px 16px;background:var(--amber-light);border:1.5px solid #f5c842;border-radius:9px;">
+              <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px;">⚡ Override & Submit with Errors</div>
+              <div style="font-size:11px;color:var(--amber);margin-bottom:10px;">You may override validation errors and submit anyway. The errors will be flagged to Procurement for their review. You must provide a reason.</div>
+              <textarea id="override-reason" placeholder="Required: explain why you are submitting despite the errors (e.g. license renewal in progress, bank letter being updated)…" style="width:100%;padding:8px 10px;border:1px solid #f5c842;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;min-height:72px;background:#fff;resize:vertical;margin-bottom:10px"></textarea>
+              <button class="btn btn-danger" style="background:var(--amber);color:#fff;border:none" onclick="overrideSubmit()">⚡ Override &amp; Submit to Procurement</button>
+            </div>
+          </div>
+        </div>
+      </div>
+<!-- STEP 6: SUBMITTED -->
+      <div class="step-panel" id="ep-6">
+        <div style="text-align:center;padding:56px 32px">
+          <div style="font-size:56px;margin-bottom:16px" class="pop-in">🎉</div>
+          <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:8px">Registration Submitted!</div>
+          <div style="font-size:13px;color:var(--muted);max-width:420px;margin:0 auto 28px">Your application has been sent to the Wio Procurement team. You will be notified once reviewed.</div>
+          <div class="card" style="max-width:480px;margin:0 auto 20px;text-align:left">
+            <div class="card-header"><div class="card-icon" style="background:var(--green-light)">📋</div><div><div class="card-heading">Submission Details</div></div></div>
+            <div class="card-body">
+              <div class="summary-grid">
+                <div class="sum-row"><div class="sum-label">Reference No.</div><div class="sum-value" id="sub-ref" style="font-family:'DM Mono',monospace">—</div></div>
+                <div class="sum-row"><div class="sum-label">Submitted</div><div class="sum-value" id="sub-time">—</div></div>
+                <div class="sum-row"><div class="sum-label">Company</div><div class="sum-value" id="sub-company">—</div></div>
+                <div class="sum-row"><div class="sum-label">Status</div><div class="sum-value"><span class="chip chip-pending">PENDING REVIEW</span></div></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-secondary" onclick="resetVendor()">← Start New Registration</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══ PROCUREMENT ══ -->
+<div class="view" id="view-procurement">
+  <aside class="sidebar">
+    <div class="sb-sect">Procurement</div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="pTab('pd')"><span class="si">📊</span> Dashboard</div>
+      <div class="sb-item" onclick="pTab('pp')"><span class="si">🎯</span> Contract Priority</div>
+      <div class="sb-item" onclick="pTab('pq')"><span class="si">📥</span> Review Queue <span class="sb-badge" id="pqbadge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="pTab('pn')"><span class="si">➕</span> Initiate Review</div>
+      <div class="sb-item" onclick="pTab('pa')"><span class="si">📋</span> All Contracts</div>
+    </div>
+    <div class="sb-div"></div>
+    <div class="sb-sect">Quick Links</div>
+    <div class="sb-nav">
+      <div class="sb-item" onclick="window.open('https://cyriac99.github.io/Vendor-Enrolment-Test/wio_vendor_portal.html','_blank')"><span class="si">🏢</span> Vendor Enrolments ↗</div>
+    </div>
+    <div class="sb-foot"><button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center" onclick="refreshAll()">↻ Refresh</button></div>
+  </aside>
+  <main class="main">
+    <div class="sub active" id="pd">
+      <div class="ph"><div><div class="ph-title">Procurement Dashboard</div></div><div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="refreshAll()">↻</button><button class="btn btn-primary btn-sm" onclick="pTab('pn')">+ Initiate</button></div></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="ps-total">0</div><div class="stat-lbl">Total Contracts</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="ps-p1">0</div><div class="stat-lbl">P1 Sign TODAY</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="ps-pend">0</div><div class="stat-lbl">Pending Review</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="ps-done">0</div><div class="stat-lbl">Completed</div></div>
+      </div>
+      <div class="card"><div class="card-hdr"><div class="card-icon" style="background:var(--red-light)">🔴</div><div><div class="card-title">Sign TODAY — Priority 1</div></div></div><div style="padding:0" id="pd-p1"></div></div>
+      <div class="card"><div class="card-hdr"><div class="card-icon" style="background:var(--amber-light)">📥</div><div><div class="card-title">Vendor Submissions Awaiting Review</div></div></div><div style="padding:0" id="pd-incoming"></div></div>
+    </div>
+    <div class="sub" id="pp">
+      <div class="ph"><div><div class="ph-title">Contract Priority List</div><div class="ph-sub">All contracts by priority for CFO & Legal review</div></div><div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="exportPriCSV()">↓ CSV</button><button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add</button></div></div>
+      <div class="fbar">
+        <div class="pill on" onclick="priFilter(0,this)">All</div>
+        <div class="pill" onclick="priFilter(1,this)" style="border-color:#f5b8ae;color:#9b2012;background:#fff0ee">🔴 P1</div>
+        <div class="pill" onclick="priFilter(2,this)" style="border-color:#f5d580;color:#7a4f00;background:#fff8e6">🟡 P2</div>
+        <div class="pill" onclick="priFilter(3,this)" style="border-color:#b3c9f5;color:#1a3a7a;background:#eef4ff">🔵 P3</div>
+        <div class="pill" onclick="priFilter(4,this)" style="border-color:#d8d4cc;color:#50504a;background:#f2f2f0">⚪ P4</div>
+        <select class="fsel" id="pri-sf" onchange="renderPri()"><option value="">All Status</option><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="ONHOLD">On Hold</option></select>
+        <input class="fsearch" type="text" id="pri-sq" placeholder="Search vendor…" oninput="renderPri()">
+      </div>
+      <div id="pri-container"></div>
+    </div>
+    <div class="sub" id="pq">
+      <div class="ph"><div><div class="ph-title">Review Queue</div></div></div>
+      <div class="fbar"><select class="fsel" id="pq-sf" onchange="renderPQ()"><option value="">All Status</option><option value="submitted">Submitted</option><option value="review">Under Review</option></select><input class="fsearch" type="text" id="pq-sq" placeholder="Search…" oninput="renderPQ()"></div>
+      <div class="card" style="padding:0"><div id="pq-list"></div></div>
+    </div>
+    <div class="sub" id="pn">
+      <div class="ph"><div><div class="ph-title">Initiate Contract Review</div></div></div>
+      <div class="card"><div class="card-hdr"><div class="card-icon" style="background:var(--blue-light)">📋</div><div><div class="card-title">Contract Details</div></div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="field span2"><label>Contract Title <span class="req">*</span></label><input type="text" id="pn-title"></div>
+          <div class="field"><label>Vendor / Company <span class="req">*</span></label><input type="text" id="pn-vendor"></div>
+          <div class="field"><label>Vendor Email</label><input type="email" id="pn-email"></div>
+          <div class="field"><label>Type</label><select id="pn-type"><option>Renewal</option><option>New Contract</option><option>Amendment</option><option>SLA Agreement</option><option>NDA</option><option>MSA</option><option>SOW</option></select></div>
+          <div class="field"><label>Priority</label><select id="pn-priority"><option value="1">P1 — Sign TODAY</option><option value="2" selected>P2 — This Week</option><option value="3">P3 — Next Week</option><option value="4">P4 — Later</option></select></div>
+          <div class="field"><label>Value (AED)</label><input type="number" id="pn-value"></div>
+          <div class="field"><label>Due Date</label><input type="date" id="pn-due"></div>
+          <div class="field"><label>Procurement Officer</label><input type="text" id="pn-proc"></div>
+          <div class="field"><label>Legal Reviewer</label><input type="text" id="pn-legal"></div>
+          <div class="field"><label>Responsible Person</label><input type="text" id="pn-resp"></div>
+          <div class="field"><label>Responsible Email</label><input type="email" id="pn-resp-email"></div>
+          <div class="field span2"><label>Notes</label><textarea id="pn-notes"></textarea></div>
+        </div>
+        <div class="sec-div">Upload Contract (Optional — AI will auto-fill fields)</div>
+        <div class="upload-zone" onclick="document.getElementById('pn-file').click()">
+          <input type="file" id="pn-file" accept=".docx,.pdf" onchange="handleCUpload('pn',this)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+          <div style="font-size:28px;margin-bottom:8px">📄</div>
+          <div style="font-size:12px;color:var(--muted)"><strong style="color:var(--blue-mid)">Click to upload</strong> · Word or PDF · AI reads and fills fields</div>
+        </div>
+        <div id="pn-fdisp"></div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="initReview()">Initiate Review & Notify Parties →</button><button class="btn btn-secondary" onclick="pTab('pd')">Cancel</button></div>
+      </div></div>
+    </div>
+    <div class="sub" id="pa">
+      <div class="ph"><div><div class="ph-title">All Contracts</div></div><div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="exportCtrCSV()">↓ CSV</button></div></div>
+      <div class="fbar">
+        <select class="fsel" id="pa-sf" onchange="renderPA()"><option value="">All Status</option><option value="submitted">Submitted</option><option value="review">Under Review</option><option value="legal">Legal</option><option value="responsible">Responsible</option><option value="approved">Approved</option><option value="docusign">DocuSign</option><option value="completed">Completed</option></select>
+        <input class="fsearch" type="text" id="pa-sq" placeholder="Search…" oninput="renderPA()">
+      </div>
+      <div class="card" style="padding:0"><div id="pa-list"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- ══ LEGAL ══ -->
+<div class="view" id="view-legal">
+  <aside class="sidebar">
+    <div class="sb-sect">Legal</div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="lTab('lq')"><span class="si">📥</span> Review Queue <span class="sb-badge" id="lqbadge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="lTab('la')"><span class="si">📋</span> All Assigned</div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="sub active" id="lq">
+      <div class="ph"><div><div class="ph-title">Legal Review Queue</div></div><div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="refreshAll()">↻ Refresh</button></div></div>
+      <div class="card" style="padding:0"><div id="lq-list"></div></div>
+    </div>
+    <div class="sub" id="la">
+      <div class="ph"><div><div class="ph-title">All Assigned</div></div></div>
+      <div class="card" style="padding:0"><div id="la-list"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- ══ RESPONSIBLE ══ -->
+<div class="view" id="view-responsible">
+  <aside class="sidebar">
+    <div class="sb-sect">Responsible Person</div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="rTab('rq')"><span class="si">📥</span> Pending Sign-off <span class="sb-badge" id="rqbadge" style="display:none">0</span></div>
+      <div class="sb-item" onclick="rTab('ra')"><span class="si">📋</span> All Assigned</div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="sub active" id="rq">
+      <div class="ph"><div><div class="ph-title">Pending Sign-off</div><div class="ph-sub">Contracts requiring your approval — scope, IT SLA, final sign-off</div></div><div class="ph-actions"><button class="btn btn-secondary btn-sm" onclick="refreshAll()">↻ Refresh</button></div></div>
+      <div class="card" style="padding:0"><div id="rq-list"></div></div>
+    </div>
+    <div class="sub" id="ra">
+      <div class="ph"><div><div class="ph-title">All Assigned</div></div></div>
+      <div class="card" style="padding:0"><div id="ra-list"></div></div>
+    </div>
+  </main>
+</div>
+
+</div><!-- end shell -->
+
+<!-- CONTRACT DRAWER -->
+<div class="drawer-overlay" id="dov" onclick="closeDr()"></div>
+<div class="drawer" id="dr">
+  <div class="dh">
+    <div><div class="dt" id="dr-title">—</div><div style="font-size:11px;color:var(--muted)" id="dr-ref">—</div></div>
+    <div id="dr-chip" style="margin-left:auto;margin-right:10px"></div>
+    <button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px" onclick="closeDr()">✕</button>
+  </div>
+  <div class="db" id="dr-body"></div>
+  <div class="dfoot" id="dr-foot"></div>
+</div>
+
+<!-- REDLINE MODAL -->
+<div class="modal-overlay" id="rl-modal">
+  <div class="modal">
+    <div class="mh"><div class="mt">⚖️ Redline Analysis</div><button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px" onclick="document.getElementById('rl-modal').classList.remove('open')">✕</button></div>
+    <div class="mb">
+      <div class="ib ib-info">Upload original + redlined contract. Claude AI will compare and summarise all changes for all parties to see.</div>
+      <div class="sec-div">Original Contract</div>
+      <div class="upload-zone" onclick="document.getElementById('rl-orig').click()"><input type="file" id="rl-orig" accept=".docx,.pdf" onchange="rlUpload('orig',this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"><div style="font-size:22px;margin-bottom:6px">📄</div><div style="font-size:12px;color:var(--muted)">Upload original contract</div></div>
+      <div id="rl-orig-disp"></div>
+      <div class="sec-div">Redlined Version</div>
+      <div class="upload-zone" onclick="document.getElementById('rl-red').click()"><input type="file" id="rl-red" accept=".docx,.pdf" onchange="rlUpload('red',this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"><div style="font-size:22px;margin-bottom:6px">📝</div><div style="font-size:12px;color:var(--muted)">Upload redlined version</div></div>
+      <div id="rl-red-disp"></div>
+      <div style="display:none"><input type="password" id="rl-api-key" placeholder="sk-ant-api03-…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:11px;background:var(--bg)" oninput="rlKeyChk(this.value)"></div>
+      <div id="rl-prog" style="display:none;margin-top:14px">
+        <div style="background:var(--blue-light);border-radius:8px;padding:16px;text-align:center">
+          <div class="spin" style="font-size:24px;margin-bottom:8px">⚙️</div>
+          <div style="font-size:13px;font-weight:600" id="rl-prog-txt">Analysing…</div>
+          <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px"><div class="ocr-prog-fill" id="rl-prog-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="document.getElementById('rl-modal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-purple" id="rl-run-btn" onclick="runRL()" disabled>⚖️ Run AI Analysis</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PRIORITY MODAL -->
+<div class="modal-overlay" id="ep-modal">
+  <div class="modal">
+    <div class="mh"><div class="mt">Edit Contract</div><button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px" onclick="document.getElementById('ep-modal').classList.remove('open')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="ep-id">
+      <div class="form-grid">
+        <div class="field"><label>Vendor</label><input type="text" id="ep-vendor"></div>
+        <div class="field"><label>Priority</label><select id="ep-priority"><option value="1">P1 — Sign TODAY</option><option value="2">P2 — This Week</option><option value="3">P3 — Next Week</option><option value="4">P4 — Later</option></select></div>
+        <div class="field span2"><label>Description</label><input type="text" id="ep-desc"></div>
+        <div class="field"><label>TCV (AED)</label><input type="number" id="ep-tcv"></div>
+        <div class="field"><label>Status</label><select id="ep-status"><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="ONHOLD">On Hold</option></select></div>
+        <div class="field"><label>Procurement Officer</label><input type="text" id="ep-proc"></div>
+        <div class="field"><label>ExCo Approver</label><input type="text" id="ep-exco"></div>
+        <div class="field"><label>Responsible</label><input type="text" id="ep-resp"></div>
+        <div class="field"><label>Legal Status</label><input type="text" id="ep-legal"></div>
+        <div class="field"><label>Renewal?</label><select id="ep-renewal"><option value="false">No</option><option value="true">Yes</option></select></div>
+        <div class="field span2"><label>Notes</label><textarea id="ep-notes" style="min-height:56px"></textarea></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-primary" onclick="savePri()">Save Changes</button>
+      <button class="btn btn-teal" onclick="trigFromPri()">⚡ Trigger Review</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('ep-modal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PRIORITY MODAL -->
+<div class="modal-overlay" id="ap-modal">
+  <div class="modal">
+    <div class="mh"><div class="mt">Add Contract</div><button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px" onclick="document.getElementById('ap-modal').classList.remove('open')">✕</button></div>
+    <div class="mb">
+      <div class="form-grid">
+        <div class="field"><label>Vendor <span class="req">*</span></label><input type="text" id="ap-vendor"></div>
+        <div class="field"><label>Priority</label><select id="ap-priority"><option value="1">P1</option><option value="2" selected>P2</option><option value="3">P3</option><option value="4">P4</option></select></div>
+        <div class="field span2"><label>Description</label><input type="text" id="ap-desc"></div>
+        <div class="field"><label>TCV (AED)</label><input type="number" id="ap-tcv"></div>
+        <div class="field"><label>Status</label><select id="ap-status"><option value="OPEN">Open</option><option value="CLOSED">Closed</option><option value="ONHOLD">On Hold</option></select></div>
+        <div class="field"><label>Procurement</label><input type="text" id="ap-proc"></div>
+        <div class="field"><label>ExCo</label><input type="text" id="ap-exco"></div>
+        <div class="field"><label>Responsible</label><input type="text" id="ap-resp"></div>
+        <div class="field"><label>Legal</label><input type="text" id="ap-legal"></div>
+        <div class="field span2"><label>Notes</label><textarea id="ap-notes" style="min-height:56px"></textarea></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-primary" onclick="addPri()">Add Contract</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('ap-modal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- OCR OVERLAY -->
+<div class="ocr-ov hidden" id="ocr-ov">
+  <div class="ocr-box">
+    <div class="ocr-top">
+      <div class="ocr-title">📄 Smart Document Reader</div>
+      <div class="ocr-sub">Upload your vendor documents — AI extracts and fills all fields automatically</div>
+      <div class="ocr-key-box" style="display:none">
+        <div style="font-size:18px">🔑</div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;margin-bottom:3px">Anthropic API Key</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:7px">Required for AI document reading · Stored in this session only</div>
+          <div class="ocr-key-row">
+            <input type="password" class="ocr-key-input" id="api-key-input" placeholder="sk-ant-api03-…" oninput="validateApiKey(this.value)">
+            <span id="api-key-status" style="font-size:18px">⬜</span>
+            <button class="btn btn-sm btn-ghost" onclick="toggleKeyVis()">👁</button>
+          </div>
+        </div>
+      </div>
+      <div class="ocr-drop" id="ocr-drop">
+        <input type="file" id="ocr-file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.docx" onchange="handleOCRFiles(this.files)">
+        <div class="ocr-drop-icon">☁️</div>
+        <div class="ocr-drop-title">Drop documents here or click to browse</div>
+        <div class="ocr-drop-hint">Accepts <strong>PDF, JPG, PNG, DOCX</strong> · Up to 5 documents at once</div>
+        <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px">
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted)">Trade License</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted)">VAT Certificate</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted)">Bank Letter</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted)">POA / Board Resolution</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted)">Registration Form</span>
+        </div>
+      </div>
+      <div id="ocr-file-list"></div>
+      <div id="ocr-prog-wrap" style="display:none;padding:14px 0">
+        <div class="ocr-prog-bar"><div class="ocr-prog-fill" id="ocr-prog-fill" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)"><span id="ocr-prog-label">Reading…</span><span id="ocr-prog-pct">0%</span></div>
+      </div>
+      <div id="ocr-preview" style="display:none;border-radius:9px;overflow:hidden;border:1px solid var(--border);margin-top:14px">
+        <div class="ocr-prev-hdr"><span>Extracted Fields</span><span id="ocr-prev-cnt" style="font-family:'DM Mono',monospace;font-size:10px;background:rgba(0,0,0,.08);padding:2px 7px;border-radius:10px">0 fields</span></div>
+        <div id="ocr-preview-rows"></div>
+      </div>
+    </div>
+    <div class="ocr-foot">
+      <button class="btn btn-secondary" onclick="skipOCR()">Skip</button>
+      <button class="btn btn-teal" id="apply-ocr-btn" onclick="applyOCR()" disabled>✓ Apply to Form</button>
+      <div style="font-size:11px;color:var(--muted);margin-left:auto">Fields highlighted in teal were auto-filled</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+// ═══ CONFIG ═══
+const SB_URL = 'https://amtqlhqmcpnrfhvrhbqj.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtdHFsaHFtY3BucmZodnJoYnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNDk2NjgsImV4cCI6MjA5NDkyNTY2OH0.lQH5Syx2D1Xk-n1pHpL_V4QgRv1Y_qKl2XyF3CQ681o';
+const MODEL  = 'claude-haiku-4-5-20251001';
+const SBH = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
+
+// ═══ STATE ═══
+let role = null;
+let _contracts = [];
+let _priData = [];
+let _curRef = null;
+let _priFilter = 0;
+let _rlOrigFile = null, _rlRedFile = null;
+let _ncFile = null, _pnFile = null;
+
+// Enrolment state
+let eStep = 0;
+let eDomInt = null;
+let eDocState = {};
+let eOcrRes = {};
+let eOcrFiles = [];
+let eOcrUploadedFiles = {};
+let eValidation = {errors:[],warnings:[],passed:[]};
+let eApiKey = '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';
+
+// ═══ SUPABASE ═══
+async function sbGet(table, q='') {
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/'+table+q, {headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(!r.ok) throw new Error(await r.text());
+    return await r.json();
+  } catch(e) { console.error('SB get',e); return []; }
+}
+async function sbPost(table, row) {
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/'+table, {method:'POST',headers:{...SBH,'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(row)});
+    if(!r.ok) throw new Error(await r.text());
+    return await r.json();
+  } catch(e) { console.error('SB post',e); toast('⚠ Sync error: '+e.message.slice(0,50)); return null; }
+}
+async function sbPatch(table, col, val, row) {
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/'+table+'?'+col+'=eq.'+encodeURIComponent(val), {method:'PATCH',headers:SBH,body:JSON.stringify(row)});
+    if(!r.ok) throw new Error(await r.text());
+    return await r.json();
+  } catch(e) { console.error('SB patch',e); toast('⚠ Update error: '+e.message.slice(0,50)); return null; }
+}
+function sj(v) { try{return JSON.parse(v)}catch(e){return null} }
+
+// ═══ ROLE ═══
+function selectRole(r) {
+  role = r;
+  document.getElementById('landing').classList.add('out');
+  setTimeout(()=>{
+    document.getElementById('landing').style.display='none';
+    document.getElementById('topbar').style.display='flex';
+    document.getElementById('shell').style.display='flex';
+    const rm = {'vendor':'Vendor Portal','procurement':'Procurement — Contract Management','legal':'Legal — Contract Review','responsible':'Responsible Person — Sign-off'};
+    document.getElementById('tb-module').textContent = rm[r]||'Portal';
+    const tb = document.getElementById('tb-role');
+    tb.textContent = r.toUpperCase(); tb.className = 'tb-role '+r;
+    ['vendor','procurement','legal','responsible'].forEach(v=>{
+      document.getElementById('view-'+v).className = 'view'+(v===r?' active':'');
+    });
+    const savedKey = sessionStorage.getItem('wio_api_key');
+    if(savedKey) {
+      eApiKey = savedKey;
+      const ki = document.getElementById('api-key-input');
+      if(ki) ki.value = savedKey;
+      const rk = document.getElementById('rl-api-key');
+      if(rk) rk.value = savedKey;
+    }
+    refreshAll();
+  }, 380);
+}
+function switchRole() {
+  role=null;
+  document.getElementById('topbar').style.display='none';
+  document.getElementById('shell').style.display='none';
+  const l=document.getElementById('landing');
+  l.style.display='flex'; l.classList.remove('out');
+}
+
+// ═══ DATA ═══
+async function loadContracts() {
+  const rows = await sbGet('contracts','?order=created_at.desc&limit=200');
+  _contracts = rows.map(r=>Object.assign({},r,{history:sj(r.history)||[],redlineSummary:sj(r.redline_summary)||null}));
+}
+
+// Load priority data from rawData
+const rawData = [
+  [2,"ADNIC",1,"Insurance against Loans",450000,"No","","CLOSED","Abhijith","Prateek","Ankit Agrawal","","","Policy document to be shared, Wio docs requested"],
+  [59,"LNRS",1,"",171383.3,"Yes","","CLOSED","Noora","Prateek","Gopal","Assigned","","Prakash needs to sign"],
+  [100,"Whoop",1,"Ramadan gifts",999630,"Yes","","CLOSED","Noora","Amina","Shem","","",""],
+  [143,"Databricks",1,"Renewal","","","","OPEN","Abhijith","Yannick","Jeaun","","",""],
+  [1,"Sprinklr",2,"Marketing Customer Experience Tool Renewal",195650,"","2026-03-17","CLOSED","Cyriac","Amina","Sukriti","Divyaa","Sprinklr has shared the updated order form on 17th March 2026 and has been submitted for signatures","Pending Signature"],
+  [3,"ARN",2,"ARN Quote comparison",3202000,"No","2026-01-27","OPEN","Cyriac","Amina","Jekaterina","Divyaa","DocuSign","CFO signature pending"],
+  [5,"Al Rizq",2,"AUH office - Supply and installation of external signage",176000,"Yes","","CLOSED","Evita/Burhan","Prakash","Burhan","Sally","","Jay has confirmed the proposed design option with the larger signage size"],
+  [6,"Al Rizq",2,"EXPO Office - Signages",130000,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","Julian","","Agreement under sign off"],
+  [7,"CSQ-SEREX AOR",2,"AD office AOR - Authorities approval",170000,"Yes","","CLOSED","Evita/Burhan","Prakash","Burhan","Sally","","Agreement signed- to be moved under VEDRA"],
+  [8,"ARCO",2,"AD office - Contractor CONSTRUCTION (inc staircase)",18000000,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","Sally","Pending with Procurement","Under signature with Jay"],
+  [9,"ARCO",2,"LL Design review fee",177000,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","","","Under signature- Part of Arco main scope 18M"],
+  [13,"Dicetek",2,"Renewal 20 Compliance Resources",1800000,"No","2026-01-27","CLOSED","Cyriac","Hanan","Mustafa","Divyaa","Under signature","Pending CFO signature"],
+  [14,"Appsflyer",2,"Renewal",187297.5,"","","OPEN","Cyriac","Amina","Jekaterina","Divyaa","DocuSign","CFO signature pending"],
+  [15,"Veerloop",2,"Renewal",17815,"Yes","","OPEN","Noora","Prateek","Ankit","Divyaa","Noora to confirm Exco approval to proceed","waiting for the vendor to send the revised order"],
+  [16,"Perfios",2,"Renewal",1000000,"No","2026-02-27","CLOSED","Abhijith","Faisal","Ankit","Divyaa","legal comments sent","Still waiting for updated contract from vendor"],
+  [17,"Aramex",2,"Aramex Addendum new scope of work","","","","CLOSED","Karthick","Andre","Tintu","Julian","","Addendum#12 sent to ops for review"],
+  [18,"Sana",2,"1 year contract",277641,"Yes","","CLOSED","Noora","Mona","Sunaina","Divyaa","Under signature","All terms are approved, under signature"],
+  [21,"Data Direct",2,"Co-working space FUJ",936000,"Yes","","CLOSED","Evita/Burhan","Prakash","Burhan","Sally","","With Prakash for sign off"],
+  [25,"Dicetek",2,"KYC EDD Team 10 resources Renewal",390000,"No","2026-03-18","OPEN","Cyriac","Prateek","Vidya","Divyaa","DocuSign","Pending Signature on Docusign"],
+  [26,"ARN",2,"one-week competition across Virgin, City and Al Arabiya",400000,"Yes","","CLOSED","Noora","Amina","Andrea Diaz","Divyaa","Legal Comments sent","3 stations: arabian, city and virgin"],
+  [27,"EFR",2,"Renewal",4000000,"No","2026-02-11","CLOSED","Abhijith","Faisal","Jo","","","With Gaurav for signature"],
+  [29,"Mambu",2,"De-Fi Mambu - 75k Accounts-Separate Instance",460000,"","TBD","OPEN","Karthick","Gaurav","Enes Turk","Divyaa","under signature","JP Approved. Order form sent to Defi team"],
+  [35,"Liink",2,"Bene Pre validation",256900,"No","","CLOSED","Abhijith","Prateek","Gopal","","",""],
+  [40,"Aramex",2,"Amended and restated agreement for the extension",900000,"","2026-03-18","OPEN","Cyriac","Andre","Tintu/Mithson","Divyaa","Documents awaited","Pending Review with Aramex"],
+  [43,"Facstet",2,"Commodities (to trade Gold and Silver)",13212,"Yes","","CLOSED","Evita","Gaurav","Sudha","","","Contract with legal"],
+  [52,"Gtreasury",2,"Termsheet",73400,"Yes","","CLOSED","Cyriac","Prakash","Ulvi","Not assigned to Legal","","Pending legal to initiate on Docusign"],
+  [54,"Dicetek",2,"Renewal 10 KYC",390000,"No","","CLOSED","Cyriac","Hanan","?","Not assigned to Legal","",""],
+  [55,"Hacken",2,"Cybersecurity Certification Wio Security Regulator on Digital Assets",95485,"Yes","","CLOSED","Cyriac","Gaurav","Luciano","Divyaa","DocuSign",""],
+  [56,"BCG",2,"Treasury optimisation consultancy","","No","","CLOSED","Evita","Prakash","Sunil","","","Under signature"],
+  [64,"MBG",2,"Extension",18000,"","","CLOSED","Noora","Prakash","Emad","Assigned","","on docusign, emad needs to sign then prakash"],
+  [74,"Samsung Pay",2,"Integration with Samsung Pay for acquiring","","No","","CLOSED","Abhijith","Yatin","Javed","Julian","",""],
+  [75,"Nagarro",2,"SOW for adhoc additional support","","No","","OPEN","Cyriac","Yannick","Aishwarya","Divya","",""],
+  [83,"ClearGrid",2,"Debts collection competitor","","Yes","","OPEN","Evita","Faisal","Jitesh","Not assigned","","Under signature with Prakash"],
+  [84,"Passfort",2,"Compliance system","","No","","OPEN","Evita","Andre","Tintu","Not assigned","","Under signature"],
+  [85,"Al Rawadh",2,"AD Office - Contract JOINERY",8356297,"No","","OPEN","Evita/Burhan","Prakash","Burhan","","","Approved by Jay, awaiting contract draft from vendor"],
+  [87,"Elevenish",2,"","","Yes","","CLOSED","Noora","Amina","Zayed","Assigned","",""],
+  [88,"Trescon",2,"","","Yes","","CLOSED","Noora","Amina","Zayed","Assigned","",""],
+  [91,"ARCO",2,"Undertaking Letter for Structural Modification",0,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","Divya","","Undertaking under review with Legal"],
+  [92,"Chelsea Greens",2,"AD FF- Work Stations / Loose Furniture / Soft seating",5827620,"Yes","","CLOSED","Evita/Burhan","Prakash","Burhan","Divya","","LOA signed, Payment initiated"],
+  [111,"Browserstack",2,"WIO app testing tool",6000,"No","","CLOSED","Mohamed","Yannick","Balachander","Divyaa","signed",""],
+  [122,"Teramind",2,"Monitoring tool licenses",23000,"No","","OPEN","Mohamed","Yannick","Marco","Divyaa","","Awaiting legal response"],
+  [128,"Kroll",2,"Consultancy - Board and Exco Training and FATF Evaluation Preparation",100925,"No","","CLOSED","Evita","Hanan","Rabee","Sally","","under signature with Prakash"],
+  [129,"Kroll",2,"Consultancy - FCC Gap assessment",313785,"No","","CLOSED","Evita","Hanan","Rabee","Sally","","under signature with Prakash"],
+  [130,"Kroll",2,"Consultancy - Independent Validation of CBUAE Internal Audit",27525,"No","","CLOSED","Evita","Ali","Marco","Sally","","Contract with Legal"],
+  [131,"Zamp",2,"Migration BCP - Europe",36700,"No","","CLOSED","Abhijith","Faisal","Jo","","",""],
+  [132,"Austria Card",2,"New agreement with Turkey entity for Burgopack",47710,"No","","OPEN","Abhijith","Andre","Mithson","","",""],
+  [145,"Zimperium",2,"App Security (Through helpAG)","","","","CLOSED","Abhijith","Yannick","Frentzen","","",""],
+  [146,"Multiplier",2,"EOR Platform","","","","OPEN","Abhijith","Prakash","Chakz","","",""],
+  [149,"Alibaba",2,"Cloud MSA for AI platform and AI Agent","","","","OPEN","Abhijith","Yannick","Aishwarya/Ayush","","",""],
+  [152,"Transguard",2,"Addendum for Pick up and drop service from LULU","","","","OPEN","Evita","Andre","Nehad","","","Negotiations finalized, addendum to be signed"],
+  [156,"Airship",2,"Termination Notice","","No","","CLOSED","Cyriac","Prateek","Ankit Agrawl","Julian","",""],
+  [158,"ARCO",2,"Consent of assignment","","","","OPEN","Evita","Prakash","Evita","","","To be signed"],
+  [161,"Alphadata",2,"IT Network, CCTV, ACS",1600000,"","","OPEN","Abhijith","Yannick","Bhuvanesh","","","Currently request CEO approval, then release LOA"],
+  [162,"Alpha Audio",2,"Audio Visual",750000,"","","OPEN","Abhijith","Yannick","Mohamed","","","Currently request CEO approval, then release LOA"],
+  [20,"Al Hilal Properties",3,"FUJ Office - Lease Al Hilal Business tower - all 9th Floor",350000,"Yes","","ONHOLD","Evita/Burhan","Prakash","Burhan","Sally","","Trade license for FUJ in progress"],
+  [24,"Mambu",3,"CR for Islamic Banking (Shari'ah Deposit + 200k active accounts)",1500000,"No","TBD","CLOSED","Karthick","Yannick","Srikanth","Not assigned to Legal","","waiting for JP approval"],
+  [42,"Aldar",3,"AD Office - Addendum for Marketing fees on WIO signage",6000000,"No","","OPEN","Evita/Burhan","Prakash","Burhan","Not assigned to Legal","","Under discussion with Aldar"],
+  [44,"Edge Technology",3,"TAMM 1.1 AI",500000,"","","OPEN","Karthick","Yannick","Ankit Bansal","TBD","","Phase 1.1 at AED 500k, need Jay approval"],
+  [47,"Feedzai",3,"Digital trust slab renegotiation","","No","","CLOSED","Abhijith","Faisal","Jo and Ashwani","","","Awaiting confirmation from Jo"],
+  [48,"Etihad",3,"5th floor lease extension",2750000,"No","2026-07-06","OPEN","Evita/Burhan","Prakash","Karthick/Burhan","Julian","","Extension period to be confirmed"],
+  [49,"StausNeo",3,"Tech & Non Tech Admin fee updated SOW","","No","","OPEN","Karthick","TBD","Chaks","Cregor","","waiting for the final SOW and feedback from Chaks"],
+  [51,"Image Info System",3,"VAT System AMC for 6 months",19000,"No","2026-03-28","OPEN","Karthick","Prakash","Ghulam/Sajid","Naima","","On docusign. Sajid to have discussion with PS"],
+  [57,"Alibaba",3,"Agentar platform for Transaction screening",1400000,"No","","OPEN","Karthick","Yatin","Ayush Durga / Rodrigo","Sally","","SOW review in progress"],
+  [58,"Guidde",3,"Renewal",14725,"","","OPEN","Noora","Andre","Alan","","","Negotiating with vendor"],
+  [62,"Forty Eight Marketing",3,"YT influencers",70000,"No","","OPEN","Noora","Prateek","Valentina","","","contract sent to legal"],
+  [63,"Etisalat",3,"International SMS for non-resident","","No","","CLOSED","Karthick","Yannick","Ankit Agarwal","Not assigned to Legal","","waiting for the proposal"],
+  [65,"Jocata",3,"Price Revision","","No","","CLOSED","Abhijith","Prateek","Ankita","Sally","",""],
+  [66,"KPMG",3,"Operational Resilience Consultant",750000,"No","","ONHOLD","Cyriac","Faisal","Prasanna","Not assigned to Legal","","Pending CEO approval"],
+  [67,"Dicetek",3,"New to Country 1 Resources",78000,"No","NA","CLOSED","Cyriac","Andre","Uthaiah","Not assigned to Legal","","Pending CFO signature"],
+  [68,"Mindmap",3,"Mindmap AMC",35000,"","","OPEN","Karthick","Andre","Upasana","Divyaa","Legal review sent","SOW under review"],
+  [71,"CyberArrow",3,"CyberArrow GRC tool renewal",105000,"","","OPEN","Karthick","Yannick","Seema","NA","","waiting for Seema & Yannick sign off"],
+  [73,"RFI Global",3,"Survey for SME",91750,"No","","CLOSED","Abhijith","Arnold","Arnold","Cregor","",""],
+  [75,"Jocata",3,"Resource renewal","","No","","CLOSED","Abhijith","Prateek","Ankita","","",""],
+  [77,"Digital Rocket",3,"Digital Marketing Agency Replacement",220000,"No","","ONHOLD","Cyriac","Amina","Andrea Diaz","Not assigned to Legal","","Pending CEO clearance"],
+  [79,"AiPrise",3,"POC Corporate Website Scoring Risk Scoring",0,"NA","","CLOSED","Cyriac","Faisal","Alexander Puchkov","Divyaa","legal advice given- POC letter to be signed","Pending Legal Review"],
+  [80,"BitPanda",3,"Crypto Partner",550000,"No","","CLOSED","Cyriac","Gaurav","Mohammad","","","Risk Assessment pending, Contract review ongoing, CEO approval received"],
+  [81,"JuicyScore",3,"POC Device Based Credit and Fraud Risk Assessment","","NA","","ONHOLD","Cyriac","Faisal","Alexander Puchkov","Divyaa","DocuSign","pending Faisal signatures"],
+  [82,"RiskSeal",3,"POC Alternative Data Driven Credit risk Assessment","","NA","","CLOSED","Cyriac","Faisal","Alexander Puchkov","Divyaa","legal advice given- POC letter to be signed","Pending to be updated by Alex"],
+  [89,"21 FM",3,"Expo office - AMC renewal for Office boy and cleaning services",146160,"Yes","","OPEN","Evita/Burhan","Prakash","Burhan","Divya","","Renewal contract under review with legal"],
+  [90,"EFS",3,"AD Office - AMC Renewal for office boy services",87960,"Yes","","OPEN","Evita/Burhan","Prakash","Burhan","Divya","","Under signature with Prakash in docusign"],
+  [113,"DMCC",3,"Commodity Broker Platform","","No","","OPEN","Abhijith","Arnold","Arnold","","","Jay approved, need to sign the agreement"],
+  [115,"Figma Renewal",3,"Design Tool renewal",201987.5,"No","2026-02-11","CLOSED","Cyriac","Burcin","Todd","Not assigned to Legal","","Pending CFO signature"],
+  [117,"Trustfull",3,"POC Alternative Data Driven Credit risk Assessment","","NA","","CLOSED","Cyriac","Faisal","Alexander Puchkov","Divyaa","legal comments sent","Pending Signature with Ashwani"],
+  [121,"HemoData",3,"Data Protection Consultant",327337.5,"No","NA","ONHOLD","Cyriac","Faisal","Anup","Not assigned to Legal","","Pending confirmation from CRO"],
+  [123,"Moodys",3,"Credit Analysis Tool (Moodys and S&P)",2203500,"No","NA","OPEN","Cyriac","Faisal","Asanga","Not Assigned to Legal","","Online terms provided. Moodys to revise the contract"],
+  [126,"Seon",3,"POC Alternative Data Driven Credit risk Assessment",0,"NA","","OPEN","Cyriac","Faisal","Alexander Puchkov","Divyaa","legal comments on DPA sent on 22nd April","pending final version from SEON"],
+  [134,"Concentrix",3,"Wio Securities MSA and SOW",360000,"No","NA","OPEN","Cyriac","Gaurav","Nathan","Julian/Divyaa","comments sent to cyriac","legal review comments sent on 20th April"],
+  [137,"Magna → Initiative",3,"Digital marketing agency Novation from Magna to Initiative",0,"NA","","OPEN","Cyriac","Prateek","Junaid","Divya","","Review ongoing"],
+  [142,"Veefin",3,"Loan management system","","","","OPEN","Abhijith","Faisal","Yatin/AAA","","",""],
+  [153,"Lulu",3,"Cheque drop and cash deposit","","","","OPEN","Evita","Andre","Nehad","","","Negotiations in progress - tiers too high"],
+  [160,"Evaluagent",3,"Renewal QA FO Agent Evaluation Tool","","No","","OPEN","Cyriac","Andre","Alan","Not assigned to Legal","","Renewal to be initiated"],
+  [161,"Kissflow",3,"Renewal",459062.5,"No","","OPEN","Cyriac","Prakash","Evita","Not assigned to Legal","","Ripple Wallet to be opened, 3 years commitment"],
+  [160,"Fime",3,"Apple pay Certification Jaywan and Master Debit Card Portfolio",201987.5,"Yes","","OPEN","Cyriac","Yatin","Nayan","Not assigned to Legal","","Nego ongoing"],
+  [163,"Pinelabs",3,"Resources and MPLS connection","","","","OPEN","Abhijith","Yatin","Aabir","","",""],
+  [165,"Polestar",3,"PurpleTrac Vessel Tracking Compliance Tool",110175,"No","","OPEN","Cyriac","Hanan","Israfil","Not Assigned","","Commercial Review ongoing"],
+  [4,"EXPO",4,"DBX office - Addendum for marketing fee for signage",0,"No","","CLOSED","Evita/Burhan","Prakash","Burhan","Not assigned to Legal","","Light box signage approved, awaiting LL NOC"],
+  [28,"Ziwo",4,"Renewal. 20% reduction",572000,"","2026-01-27","OPEN","Mohamed","Andre","Aleksandra","TBD","","waiting for the updated SLA from Ops"],
+  [33,"21 FM",4,"Dubai office - Washroom signage and QR code implementation","","","","","","","","","",""],
+  [34,"DR Scent",4,"Air freshener perfume and dispenser - Dubai office","","","","","","","","","","Awaiting suppliers DEMO"],
+  [41,"TBD",4,"","","","","","","","","","",""],
+  [42,"Aldar",3,"AD Office - Addendum for Marketing fees on WIO signage",6000000,"No","","OPEN","Evita/Burhan","Prakash","Burhan","Not assigned to Legal","","Under discussion"],
+  [46,"Facstet",4,"Bonds historical graphs data",55050,"Yes","","ONHOLD","Evita","Gaurav","Sudha","","","Gaurav to come back"],
+  [50,"MixPanel",4,"Early renewal of MTU's for Mixpanel",74000,"No","NA","CLOSED","Mohamed","Yannick","Ankit Agrawal","Julian","","Legal review"],
+  [69,"Refinitiv",4,"WC1 - 3 additional licenses",38173,"No","","ONHOLD","Evita","Hanan","Israfil","","","Commercial approval to be obtained from Hanan"],
+  [70,"TBD",4,"Vessel Tracking and UBO unwrapping - 1 user license","","No","","ONHOLD","Evita","Hanan","Israfil","","","Gathering quotes"],
+  [86,"TBD",4,"IT set up for Abu dhabi office","","No","","OPEN","Karthick","Prakash","Karthick","Not assigned to Legal","","Design validation in progress"],
+  [93,"Desertchill",4,"Icecream Van","","No","","ONHOLD","Noora","Amina","Penny","","","Open PO"],
+  [94,"Vibes",4,"Promoters","","No","","ONHOLD","Noora","Amina","Penny","","","Open PO"],
+  [95,"LOS RFP",4,"LOS RFP (Newgen, Able Platform, M2P, nCino Nucleus Software)","","","","OPEN","Karthick","Yatin","Ankit Ambreshwar","Not Assigned to Legal","","RFP will be launched soon"],
+  [96,"Das Advertising",4,"Merchandise","","No","","ONHOLD","Noora","Amina","Penny","","",""],
+  [97,"Clouds Trading & Jasani",4,"Merchandise","","No","","ONHOLD","Noora","Amina","Penny","","",""],
+  [99,"Zoho Amendment",4,"Changing the entity from Singapore to UAE","","No","NA","CLOSED","Mohamed","Yatin","Betina Hess","Not assigned to Legal","","Awaiting validation from Zoho"],
+  [101,"Marriot",4,"Iftar dinner venue 25th Feb in Marriot Palm Jumairah",37500,"No","NA","CLOSED","Mohamed","Prateek","Ankita Ohri","Not assigned to Legal","","Contract in circulation"],
+  [106,"Archer",4,"Archer Renewal",415000,"No","2026-03-18","OPEN","Karthick","Faisal","Maen","TBD","","waiting for Faisal approval"],
+  [107,"Alphadata",4,"Printer rent contract renewal","","No","NA","CLOSED","Mohamed","Yannick","Mohammed Altayib","Not assigned to Legal","","With legal for review"],
+  [109,"Airship",4,"Airship Extension for 3 months",100000,"","2026-03-18","CLOSED","Karthick","Prateek","Ankit Agarwal","TBD","","waiting for the extension approval"],
+  [110,"Jocata",4,"LOS renewal","","No","","CLOSED","Abhijith","Prateek","Ankita/Jitesh","","","Awaiting plan from AAA and Ankita"],
+  [112,"ADMCC",4,"Yas office award letter Alphadata","","No","","CLOSED","Mohamed","Yannick","Mohammed Altayib","","","with legal"],
+  [116,"TBD",4,"FUJ Office - Contractor",0,"Yes","","OPEN","Evita/Burhan","Prakash","Burhan","Sally","","RFP to be launched by PMO"],
+  [118,"MetaBase",4,"Data platform licenses",36000,"No","NA","ONHOLD","Mohamed","Yannick","JEAN/Illya","Not assigned to Legal","","RFP in process"],
+  [119,"Alibaba Cloud Services",4,"Commercial comparison Alibaba Vs MS for VDI",2600000,"","TBD","OPEN","Karthick","Yannick","Aishwarya/Bhuvy","Sally","","waiting for JP approval"],
+  [120,"Notabene",4,"AML & Travel rule, pre-transaction risk management",0,"","","OPEN","Karthick","Gaurav","Enes Turk","Naima","","negotiating on the commercials"],
+  [124,"Databricks",4,"DataBricks Renewal","","","","OPEN","Karthick","Yannick","Jean","","","waiting for the consumption workloads commitment"],
+  [125,"StatusNeo",4,"SNEO - Interns hiring","","","","OPEN","Karthick","Mona","Chaks","Cregor","","waiting for Chaks consolidated feedback"],
+  [127,"FMP",4,"ETFs for Basic Financial ratios, Corporate action data","","","","ONHOLD","Cyriac","Gaurav","Sudhamai","Not assigned to Legal","","Pending revised commercials and Legal Review"],
+  [135,"Concentrix",4,"Wio Bank Renewal",218146.5,"No","2026-03-28","OPEN","Cyriac","Andre","Multiple","Not assigned to Legal","","Renewal to be initiated"],
+  [136,"Moodys",4,"IFRS9 ECL Engine",440700,"No","","OPEN","Cyriac","Faisal","Prasanna","Not assigned to Legal","","Nego ongoing. Final commercials to be sent to CFO"],
+  [138,"Capitex",4,"Payment Specialist Renewal","","No","2026-05-17","CLOSED","Cyriac","Andre","Arun","","","Pending Finance and Andre approval"],
+  [139,"Drivewealth",4,"Renewal Contract","","No","","CLOSED","Cyriac","Gaurav","","Not assigned to Legal","","Signature ongoing"],
+  [141,"EITC / Du",4,"Du SMS Platform Backup used when Etisalate is down","","No","","OPEN","Mohamed","Yannick","Ankit Agrwal","","","Ongoing discussion with DU"],
+  [144,"Mambu",4,"Renewal","","","","OPEN","Abhijith","Yannick","Ankit Agrawal","","",""],
+  [147,"Seclance",4,"VAPT","","","","OPEN","Abhijith","Yannick","Frentzen","","",""],
+  [148,"UAE KYC",4,"Replacement of EFR","","","","OPEN","Abhijith","Faisal","Ayush","","",""],
+  [150,"Getguru",4,"Renewal","","","","OPEN","Abhijith","Andre","Alan","","",""],
+  [154,"ZIP",4,"Procurement software","","No","","OPEN","Evita","Prakash","Evita","","","Demo and Nego in progress"],
+  [155,"Geek 7",4,"Cluster maintenance services 24/7","","No","","OPEN","Mohamed","Yannick","Janssen Manaloto","","","Validation with Yannick"],
+  [157,"Sana",4,"","","Yes","","CLOSED","Noora","Mona","Suniana","","","Prakash needs to sign"],
+  [159,"TBD",4,"FATCA system","","No","","OPEN","Cyriac","Hanan","Tamara","Not assigned to Legal","","Pending 3rd quote. Nego ongoing"],
+  [162,"Gtreasury",4,"Renewal",556060.64,"No","","OPEN","Cyriac","Prakash","Sunil","Not assigned to Legal","","Commercial Nego ongoing for Decision based pricing"],
+  [164,"EITC / Du",4,"Wio Domain certificate renewal","","","","","","","","","",""],
+  [166,"Al Etihad Payment",4,"AANI certification CBUAE Mandate",159000,"No","","OPEN","Cyriac","Prateek","Gopal","Pending","","Pending commercial approval from CFO and Prateek"],
+];
+_priData = rawData.map((r,i)=>({
+  id:'PR-'+r[0], num:r[0], vendor:r[1], priority:r[2], description:r[3]||'',
+  tcv:r[4]||0, renewal:r[5]==='Yes', docusignLink:r[6]||'',
+  status:r[7]||'OPEN', procurement:r[8]||'', exco:r[9]||'',
+  responsible:r[10]||'', legalStatus:r[11]||'', signStatus:r[12]||'',
+  notes:r[13]||''
+}));
+
+async function refreshAll() {
+  await loadContracts();
+  updateBadges();
+  if(role==='vendor')      { renderVD(); renderVC(); }
+  if(role==='procurement') { renderPD(); renderPQ(); renderPA(); renderPri(); }
+  if(role==='legal')       { renderLQ(); renderLA(); }
+  if(role==='responsible') { renderRQ(); renderRA(); }
+}
+
+function updateBadges() {
+  const pend = _contracts.filter(c=>['submitted','review'].includes(c.status)).length;
+  const leg  = _contracts.filter(c=>c.status==='legal').length;
+  const resp = _contracts.filter(c=>c.status==='responsible').length;
+  const vact = _contracts.filter(c=>c.status==='vendor_action').length;
+  setBadge('pqbadge',pend); setBadge('lqbadge',leg); setBadge('rqbadge',resp); setBadge('vcbadge',vact);
+}
+function setBadge(id,n) { const el=document.getElementById(id); if(el){el.textContent=n;el.style.display=n>0?'inline':'none';} }
+
+// ═══ NAV HELPERS ═══
+function vTab(id) { switchSub('view-vendor',id); if(id==='vd')renderVD(); if(id==='vc')renderVC(); }
+function pTab(id) { switchSub('view-procurement',id); if(id==='pd')renderPD(); if(id==='pp')renderPri(); if(id==='pq')renderPQ(); if(id==='pa')renderPA(); }
+function lTab(id) { switchSub('view-legal',id); if(id==='lq')renderLQ(); if(id==='la')renderLA(); }
+function rTab(id) { switchSub('view-responsible',id); if(id==='rq')renderRQ(); if(id==='ra')renderRA(); }
+function switchSub(viewId, subId) {
+  const view = document.getElementById(viewId);
+  if(!view) return;
+  view.querySelectorAll('.sub').forEach(s=>s.classList.remove('active'));
+  const sub = document.getElementById(subId);
+  if(sub) sub.classList.add('active');
+  view.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+}
+
+// ═══ CONTRACT TABLE ═══
+function cTable(list, cols) {
+  if(!list||!list.length) return empty('📭','No contracts','Contracts appear here when submitted');
+  const hMap={ref:'Ref',title:'Contract',vendor_name:'Vendor',status:'Status',
+    priority:'Priority',created_at:'Date',action:'',redline:'Redline'};
+  const hdr = cols.map(c=>`<th>${hMap[c]||c}</th>`).join('');
+  const rows = list.map(c=>{
+    const cells = cols.map(col=>{
+      if(col==='ref') return `<td><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${c.ref||'—'}</span></td>`;
+      if(col==='title') return `<td><div class="tv">${c.title||'—'}</div><div class="ts">${c.contract_type||''}</div></td>`;
+      if(col==='vendor_name') return `<td><div class="tv">${c.vendor_name||'—'}</div><div class="ts">${c.vendor_email||''}</div></td>`;
+      if(col==='status') return `<td>${statusChip(c.status)}</td>`;
+      if(col==='priority') return `<td>${prioChip(c.priority)}</td>`;
+      if(col==='created_at') return `<td style="font-size:11px;color:var(--muted)">${c.submitted_at||fmtD(c.created_at)||'—'}</td>`;
+      if(col==='redline') return `<td>${c.redline_summary?'<span class="chip chip-legal">✓ Redlined</span>':'<span class="chip chip-draft">—</span>'}</td>`;
+      if(col==='action') return `<td><button class="btn btn-sm btn-primary" onclick="openDr('${c.ref}')">Review →</button></td>`;
+      return '<td>—</td>';
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  return `<table class="tbl"><thead><tr>${hdr}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+function statusChip(s) {
+  const m={submitted:'chip-submitted',review:'chip-review',legal:'chip-legal',
+    responsible:'chip-responsible',approved:'chip-approved',rejected:'chip-rejected',
+    docusign:'chip-docusign',completed:'chip-completed',vendor_action:'chip-review',draft:'chip-draft'};
+  const l={submitted:'Submitted',review:'Under Review',legal:'Legal Review',responsible:'Responsible',
+    approved:'Approved',rejected:'Rejected',docusign:'DocuSign',completed:'Completed',vendor_action:'Action Required',draft:'Draft'};
+  return `<span class="chip ${m[s]||'chip-draft'}">${l[s]||s}</span>`;
+}
+function prioChip(p) {
+  const m={1:'chip-p1',2:'chip-p2',3:'chip-p3',4:'chip-p4'};
+  const l={1:'P1',2:'P2',3:'P3',4:'P4'};
+  return `<span class="chip ${m[p]||'chip-p4'}">${l[p]||'P'+p}</span>`;
+}
+function fmtD(d) { if(!d)return''; try{return new Date(d).toLocaleDateString('en-AE',{day:'2-digit',month:'short',year:'numeric'})}catch(e){return d} }
+function empty(icon,t,s) { return `<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">${t}</div><div class="empty-sub">${s}</div></div>`; }
+
+// ═══ VENDOR RENDERS ═══
+function renderVD() {
+  const all=_contracts, act=all.filter(c=>c.status==='vendor_action');
+  const pend=all.filter(c=>['submitted','review','legal','responsible'].includes(c.status));
+  const done=all.filter(c=>['approved','docusign','completed'].includes(c.status));
+  setTxt('vs-total',all.length); setTxt('vs-pending',pend.length); setTxt('vs-action',act.length); setTxt('vs-done',done.length);
+  setHTML('vd-action', act.length?cTable(act,['title','vendor_name','status','action']):empty('✅','No action required','All contracts are being reviewed'));
+  setHTML('vd-recent', cTable(all.slice(0,5),['title','vendor_name','status','created_at','action']));
+}
+function renderVC() {
+  const sf=val('vc-sf'), sq=(val('vc-sq')||'').toLowerCase();
+  let list=_contracts;
+  if(sf) list=list.filter(c=>c.status===sf);
+  if(sq) list=list.filter(c=>(c.title+c.vendor_name).toLowerCase().includes(sq));
+  setHTML('vc-list',cTable(list,['ref','title','vendor_name','status','created_at','action']));
+}
+async function submitContract() {
+  const title=val('nc-title'), type=val('nc-type'), vendor=val('nc-vendor'), email=val('nc-email');
+  if(!title||!vendor||!email||!type){toast('⚠ Fill all required fields');return;}
+  const ref='CTR-'+Date.now().toString().slice(-6);
+  const now=new Date();
+  const row={ref,title,vendor_name:vendor,vendor_email:email,contract_type:type,
+    status:'submitted',priority:2,current_step:2,
+    value:val('nc-value')||'0',currency:'AED',
+    start_date:val('nc-start')||null,end_date:val('nc-end')||null,
+    submitted_by:email,submitted_at:now.toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'}),
+    procurement_notes:val('nc-desc')||'',original_doc_name:_ncFile?.name||null,
+    history:JSON.stringify([{action:'Submitted by Vendor',by:email,at:now.toISOString()}])};
+  const res=await sbPost('contracts',row);
+  if(res){toast('✅ Contract submitted to Procurement!');_ncFile=null;setHTML('nc-fdisp','');['nc-title','nc-vendor','nc-email','nc-value','nc-desc'].forEach(clearEl);vTab('vd');await refreshAll();}
+}
+
+// ═══ PROCUREMENT RENDERS ═══
+function renderPD() {
+  const all=_contracts;
+  const p1=_priData.filter(c=>c.priority===1&&c.status==='OPEN');
+  const pend=all.filter(c=>['submitted','review'].includes(c.status));
+  const done=all.filter(c=>['completed','approved'].includes(c.status));
+  setTxt('ps-total',_priData.length+all.length); setTxt('ps-p1',p1.length); setTxt('ps-pend',pend.length); setTxt('ps-done',done.length);
+  setHTML('pd-p1',p1.length?priMini(p1.slice(0,5)):empty('🎉','No P1 contracts pending','All urgent contracts handled'));
+  setHTML('pd-incoming',pend.length?cTable(pend,['ref','title','vendor_name','status','created_at','action']):empty('📭','No submissions','Vendor submissions appear here'));
+}
+function renderPQ() {
+  const sf=val('pq-sf'), sq=(val('pq-sq')||'').toLowerCase();
+  let list=_contracts.filter(c=>['submitted','review'].includes(c.status));
+  if(sf) list=list.filter(c=>c.status===sf);
+  if(sq) list=list.filter(c=>(c.title+c.vendor_name+c.ref||'').toLowerCase().includes(sq));
+  setHTML('pq-list',cTable(list,['ref','title','vendor_name','status','priority','created_at','action']));
+}
+function renderPA() {
+  const sf=val('pa-sf'), sq=(val('pa-sq')||'').toLowerCase();
+  let list=_contracts;
+  if(sf) list=list.filter(c=>c.status===sf);
+  if(sq) list=list.filter(c=>(c.title+c.vendor_name+c.ref||'').toLowerCase().includes(sq));
+  setHTML('pa-list',cTable(list,['ref','title','vendor_name','status','priority','created_at','action']));
+}
+async function initReview() {
+  const title=val('pn-title'), vendor=val('pn-vendor');
+  if(!title||!vendor){toast('⚠ Title and vendor required');return;}
+  const ref='CTR-'+Date.now().toString().slice(-6);
+  const now=new Date();
+  const row={ref,title,vendor_name:vendor,vendor_email:val('pn-email')||'',
+    contract_type:val('pn-type'),status:'review',priority:parseInt(val('pn-priority')),current_step:3,
+    value:val('pn-value')||'0',currency:'AED',due_date:val('pn-due')||null,
+    procurement_officer:val('pn-proc')||'',legal_reviewer:val('pn-legal')||'',
+    responsible_person:val('pn-resp')||'',responsible_email:val('pn-resp-email')||'',
+    procurement_notes:val('pn-notes')||'',original_doc_name:_pnFile?.name||null,
+    submitted_at:now.toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'}),
+    submitted_by:val('pn-proc')||'Procurement',
+    history:JSON.stringify([{action:'Review Initiated by Procurement',by:val('pn-proc')||'Procurement',at:now.toISOString(),note:val('pn-notes')||''}])};
+  const res=await sbPost('contracts',row);
+  if(res){toast('✅ Review initiated — parties notified');_pnFile=null;setHTML('pn-fdisp','');['pn-title','pn-vendor','pn-email','pn-value','pn-notes','pn-proc','pn-legal','pn-resp','pn-resp-email'].forEach(clearEl);pTab('pd');await refreshAll();}
+}
+
+// ═══ LEGAL RENDERS ═══
+function renderLQ() {
+  setHTML('lq-list',cTable(_contracts.filter(c=>c.status==='legal'),['ref','title','vendor_name','redline','created_at','action']));
+}
+function renderLA() {
+  setHTML('la-list',cTable(_contracts.filter(c=>c.status==='legal'||c.legal_notes),['ref','title','vendor_name','status','redline','created_at','action']));
+}
+
+// ═══ RESPONSIBLE RENDERS ═══
+function renderRQ() {
+  setHTML('rq-list',cTable(_contracts.filter(c=>c.status==='responsible'),['ref','title','vendor_name','status','created_at','action']));
+}
+function renderRA() {
+  setHTML('ra-list',cTable(_contracts.filter(c=>c.status==='responsible'||c.responsible_notes),['ref','title','vendor_name','status','created_at','action']));
+}
+
+// ═══ DRAWER ═══
+function openDr(ref) {
+  const c=_contracts.find(x=>x.ref===ref);
+  if(!c){toast('Could not load contract');return;}
+  _curRef=ref;
+  setTxt('dr-title',c.title||'—');
+  setTxt('dr-ref',ref+' · '+(c.submitted_at||fmtD(c.created_at)||''));
+  setHTML('dr-chip',statusChip(c.status));
+  const rl = typeof c.redlineSummary==='string'?sj(c.redlineSummary):c.redlineSummary;
+  const rlHtml = rl?renderRL(rl,c.redline_by,c.redline_at):'';
+  const hist = (c.history||[]).map(h=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><strong>${h.action}</strong> — ${h.by}<div style="font-size:10px;color:var(--muted)">${fmtD(h.at)} ${h.note?'· '+h.note:''}</div></div>`).join('');
+  setHTML('dr-body',`
+    <div class="d-grid" style="margin-bottom:14px">
+      <div class="df"><div class="df-l">Title</div><div class="df-v">${c.title||'—'}</div></div>
+      <div class="df"><div class="df-l">Type</div><div class="df-v">${c.contract_type||'—'}</div></div>
+      <div class="df"><div class="df-l">Vendor</div><div class="df-v">${c.vendor_name||'—'}</div></div>
+      <div class="df"><div class="df-l">Email</div><div class="df-v">${c.vendor_email||'—'}</div></div>
+      <div class="df"><div class="df-l">Value (AED)</div><div class="df-v" style="font-family:'DM Mono',monospace">${c.value?Number(c.value).toLocaleString():'—'}</div></div>
+      <div class="df"><div class="df-l">Priority</div><div class="df-v">${prioChip(c.priority)}</div></div>
+      <div class="df"><div class="df-l">Procurement</div><div class="df-v">${c.procurement_officer||'—'}</div></div>
+      <div class="df"><div class="df-l">Legal Reviewer</div><div class="df-v">${c.legal_reviewer||'—'}</div></div>
+      <div class="df"><div class="df-l">Responsible</div><div class="df-v">${c.responsible_person||'—'}</div></div>
+      <div class="df"><div class="df-l">Document</div><div class="df-v">${c.original_doc_name||'—'}</div></div>
+    </div>
+    ${rlHtml}
+    ${c.procurement_notes?`<div class="ib ib-info" style="margin:10px 0"><strong>Procurement Notes:</strong> ${c.procurement_notes}</div>`:''}
+    ${c.legal_notes?`<div class="ib" style="background:var(--purple-light);color:var(--purple);margin:10px 0"><strong>Legal Notes:</strong> ${c.legal_notes}</div>`:''}
+    ${c.responsible_notes?`<div class="ib" style="background:var(--gold-light);color:var(--gold);margin:10px 0"><strong>Responsible Notes:</strong> ${c.responsible_notes}</div>`:''}
+    <div style="margin-top:14px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:8px">Activity</div>${hist||'<div style="font-size:12px;color:var(--muted)">No activity yet</div>'}</div>
+    <div style="margin-top:14px"><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);display:block;margin-bottom:6px">Add Notes</label>
+    <textarea id="dr-notes" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;min-height:64px;background:var(--bg);resize:vertical" placeholder="Add your notes…">${role==='procurement'?c.procurement_notes||'':role==='legal'?c.legal_notes||'':role==='responsible'?c.responsible_notes||'':''}</textarea></div>
+  `);
+  setHTML('dr-foot',drFoot(c));
+  document.getElementById('dov').classList.add('open');
+  document.getElementById('dr').classList.add('open');
+}
+function closeDr() {
+  document.getElementById('dov').classList.remove('open');
+  document.getElementById('dr').classList.remove('open');
+  _curRef=null;
+}
+function drFoot(c) {
+  if(role==='procurement') return `
+    <button class="btn btn-sm btn-teal" onclick="cAction('send_legal')">→ Legal</button>
+    <button class="btn btn-sm btn-gold" onclick="cAction('send_responsible')">→ Responsible</button>
+    <button class="btn btn-sm btn-purple" onclick="document.getElementById('rl-modal').classList.add('open');rlKeyChk(document.getElementById('rl-api-key').value)">⚖️ Redline</button>
+    <button class="btn btn-sm btn-success" onclick="cAction('approved')">✓ Approve</button>
+    <button class="btn btn-sm btn-danger" onclick="cAction('rejected')">✗ Reject</button>
+    <button class="btn btn-sm btn-ghost" onclick="cAction('vendor_action')">↩ Return to Vendor</button>`;
+  if(role==='legal') return `
+    <button class="btn btn-sm btn-purple" onclick="document.getElementById('rl-modal').classList.add('open');rlKeyChk(document.getElementById('rl-api-key').value)">⚖️ Upload Redline</button>
+    <button class="btn btn-sm btn-success" onclick="cAction('legal_approved')">✓ Legal Sign-off</button>
+    <button class="btn btn-sm btn-danger" onclick="cAction('legal_rejected')">✗ Reject</button>
+    <button class="btn btn-sm btn-ghost" onclick="cAction('vendor_action')">↩ Return to Vendor</button>`;
+  if(role==='responsible') return `
+    <button class="btn btn-sm btn-success" onclick="cAction('resp_approved')">✓ Sign-off & Approve</button>
+    <button class="btn btn-sm btn-gold" onclick="cAction('docusign')">📝 DocuSign</button>
+    <button class="btn btn-sm btn-danger" onclick="cAction('rejected')">✗ Reject</button>`;
+  if(role==='vendor') {
+    const msg = c.status==='vendor_action'?'⚠ Action required — see notes':'Contract is under review';
+    const resubBtn = c.status==='vendor_action'?`<button class="btn btn-sm btn-primary" onclick="cAction('resubmit')">↑ Resubmit</button>`:'';
+    return `<div style="font-size:12px;color:var(--muted);flex:1">${msg}</div>${resubBtn}<button class="btn btn-sm btn-ghost" onclick="closeDr()">Close</button>`;
+  }
+  return '<button class="btn btn-sm btn-ghost" onclick="closeDr()">Close</button>';
+}
+async function cAction(action) {
+  const c=_contracts.find(x=>x.ref===_curRef); if(!c) return;
+  const notes=val('dr-notes')||'';
+  const now=new Date();
+  const hist=[...(c.history||[])];
+  const am={
+    send_legal:{status:'legal',step:3,label:'Sent to Legal'},
+    send_responsible:{status:'responsible',step:4,label:'Sent to Responsible Person'},
+    approved:{status:'approved',step:5,label:'Approved'},
+    rejected:{status:'rejected',step:c.current_step,label:'Rejected'},
+    vendor_action:{status:'vendor_action',step:c.current_step,label:'Returned to Vendor'},
+    legal_approved:{status:'responsible',step:4,label:'Legal Sign-off Granted'},
+    legal_rejected:{status:'rejected',step:3,label:'Rejected by Legal'},
+    resp_approved:{status:'approved',step:5,label:'Responsible Person Sign-off'},
+    docusign:{status:'docusign',step:5,label:'DocuSign Initiated'},
+    resubmit:{status:'submitted',step:2,label:'Resubmitted by Vendor'},
+  };
+  const a=am[action]; if(!a) return;
+  hist.push({action:a.label,by:role,at:now.toISOString(),note:notes});
+  const upd={status:a.status,current_step:a.step,history:JSON.stringify(hist)};
+  if(role==='procurement'&&notes) upd.procurement_notes=notes;
+  if(role==='legal'&&notes) upd.legal_notes=notes;
+  if(role==='responsible'&&notes) upd.responsible_notes=notes;
+  if(action==='approved') upd.approved_at=now.toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'});
+  await sbPatch('contracts','ref',_curRef,upd);
+  toast('✅ '+a.label); closeDr(); await refreshAll();
+}
+
+// ═══ PRIORITY LIST ═══
+function priFilter(p, el) {
+  _priFilter=p;
+  document.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  renderPri();
+}
+function renderPri() {
+  const sq=(val('pri-sq')||'').toLowerCase(), sf=val('pri-sf')||'';
+  let data=[..._priData];
+  if(_priFilter>0) data=data.filter(c=>c.priority===_priFilter);
+  if(sf) data=data.filter(c=>c.status===sf);
+  if(sq) data=data.filter(c=>(c.vendor+c.description+c.notes).toLowerCase().includes(sq));
+  const phdr={1:'p1h',2:'p2h',3:'p3h',4:'p4h'};
+  const plabel={1:'P1 — Sign TODAY',2:'P2 — This Week',3:'P3 — Next Week',4:'P4 — 2+ Weeks'};
+  let html='';
+  [1,2,3,4].forEach(p=>{
+    const list=data.filter(c=>c.priority===p);
+    if(!list.length&&_priFilter!==0) return;
+    const hdCls={1:'ph1',2:'ph2',3:'ph3',4:'ph4'}[p];
+    html+=`<div class="psect"><div class="${hdCls}">${plabel[p]}<span style="margin-left:auto;font-size:10px;opacity:.7">${list.length} contracts</span></div>
+    <div class="ptw">${list.length?`<table class="tbl"><thead><tr><th>#</th><th>Vendor</th><th>Description</th><th>TCV (AED)</th><th>Status</th><th>Procurement</th><th>Responsible</th><th>Legal</th><th>Notes</th><th></th></tr></thead><tbody>
+    ${list.map(c=>`<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${c.num}</td>
+      <td><div class="tv">${c.vendor}</div></td>
+      <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.description||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${c.tcv?Number(c.tcv).toLocaleString():'—'}</td>
+      <td><span class="chip ${c.status==='OPEN'?'chip-open':c.status==='CLOSED'?'chip-closed':'chip-onhold'}">${c.status}</span></td>
+      <td style="font-size:11px">${c.procurement||'—'}</td>
+      <td style="font-size:11px">${c.responsible||'—'}</td>
+      <td style="font-size:11px">${c.legalStatus||'—'}</td>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)">${c.notes||'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="editPri('${c.id}')">Edit</button>
+        <button class="btn btn-sm" style="background:var(--teal-light);color:var(--teal);border:1px solid var(--teal);margin-left:4px" onclick="quickTrig('${c.id}')">⚡</button>
+      </td>
+    </tr>`).join('')}
+    </tbody></table>`:empty('📭','None','No contracts in this priority')}</div></div>`;
+  });
+  setHTML('pri-container',html||'<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No contracts match</div></div>');
+}
+function priMini(list) {
+  return `<table class="tbl"><thead><tr><th>Vendor</th><th>TCV</th><th>Procurement</th><th>Notes</th></tr></thead><tbody>${list.map(c=>`<tr><td><div class="tv">${c.vendor}</div></td><td style="font-family:'DM Mono',monospace;font-size:11px">${c.tcv?Number(c.tcv).toLocaleString():'—'}</td><td style="font-size:11px">${c.procurement||'—'}</td><td style="font-size:11px;color:var(--muted)">${c.notes||'—'}</td></tr>`).join('')}</tbody></table>`;
+}
+function editPri(id) {
+  const c=_priData.find(x=>x.id===id); if(!c) return;
+  setVal('ep-id',id); setVal('ep-vendor',c.vendor); setVal('ep-priority',c.priority);
+  setVal('ep-desc',c.description); setVal('ep-tcv',c.tcv); setVal('ep-status',c.status);
+  setVal('ep-proc',c.procurement); setVal('ep-exco',c.exco); setVal('ep-resp',c.responsible);
+  setVal('ep-legal',c.legalStatus); setVal('ep-renewal',c.renewal?'true':'false'); setVal('ep-notes',c.notes);
+  document.getElementById('ep-modal').classList.add('open');
+}
+function savePri() {
+  const id=val('ep-id'), c=_priData.find(x=>x.id===id); if(!c) return;
+  c.vendor=val('ep-vendor'); c.priority=parseInt(val('ep-priority')); c.description=val('ep-desc');
+  c.tcv=parseFloat(val('ep-tcv'))||0; c.status=val('ep-status'); c.procurement=val('ep-proc');
+  c.exco=val('ep-exco'); c.responsible=val('ep-resp'); c.legalStatus=val('ep-legal');
+  c.renewal=val('ep-renewal')==='true'; c.notes=val('ep-notes');
+  document.getElementById('ep-modal').classList.remove('open');
+  renderPri(); toast('✅ Contract updated');
+}
+function trigFromPri() {
+  const id=val('ep-id'), c=_priData.find(x=>x.id===id); if(!c) return;
+  document.getElementById('ep-modal').classList.remove('open');
+  _prefillPri(c);
+}
+function quickTrig(id) {
+  const c=_priData.find(x=>x.id===id); if(!c) return;
+  _prefillPri(c);
+}
+function _prefillPri(c) {
+  pTab('pn');
+  setVal('pn-title',c.description||c.vendor+' Contract');
+  setVal('pn-vendor',c.vendor); setVal('pn-priority',c.priority);
+  setVal('pn-proc',c.procurement); setVal('pn-legal',c.legalStatus);
+  setVal('pn-resp',c.responsible); setVal('pn-value',c.tcv); setVal('pn-notes',c.notes);
+  toast('⚡ Form pre-filled — upload contract to auto-capture data');
+}
+function openAddModal() { document.getElementById('ap-modal').classList.add('open'); }
+function addPri() {
+  const vendor=val('ap-vendor'); if(!vendor){toast('⚠ Vendor required');return;}
+  _priData.push({id:'PR-'+Date.now(),num:_priData.length+1,vendor,priority:parseInt(val('ap-priority')),
+    description:val('ap-desc'),tcv:parseFloat(val('ap-tcv'))||0,renewal:false,
+    status:val('ap-status'),procurement:val('ap-proc'),exco:val('ap-exco'),
+    responsible:val('ap-resp'),legalStatus:val('ap-legal'),notes:val('ap-notes')});
+  document.getElementById('ap-modal').classList.remove('open');
+  ['ap-vendor','ap-desc','ap-tcv','ap-proc','ap-exco','ap-resp','ap-legal','ap-notes'].forEach(clearEl);
+  renderPri(); toast('✅ Contract added');
+}
+function exportPriCSV() {
+  const h=['#','Vendor','Priority','Description','TCV','Status','Procurement','Responsible','Legal','Notes'];
+  const rows=_priData.map(c=>[c.num,c.vendor,c.priority,c.description,c.tcv,c.status,c.procurement,c.responsible,c.legalStatus,c.notes].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+  dlCSV([h,...rows],'wio_priority.csv');
+}
+function exportCtrCSV() {
+  const h=['Ref','Title','Vendor','Type','Status','Priority','Value','Submitted'];
+  const rows=_contracts.map(c=>[c.ref,c.title,c.vendor_name,c.contract_type,c.status,c.priority,c.value,c.submitted_at].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+  dlCSV([h,...rows],'wio_contracts.csv');
+}
+function dlCSV(rows,name) {
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download=name; a.click();
+  toast('✅ CSV exported');
+}
+
+// ═══ CONTRACT UPLOAD + OCR AUTOFILL ═══
+async function handleCUpload(prefix, input) {
+  if(!input.files||!input.files[0]) return;
+  const f=input.files[0];
+  if(prefix==='nc') _ncFile=f;
+  if(prefix==='pn') _pnFile=f;
+  const s=f.size>1048576?(f.size/1048576).toFixed(1)+' MB':(f.size/1024).toFixed(0)+' KB';
+  const disp=prefix+'-fdisp';
+  setHTML(disp,`<div class="uf"><div style="font-size:20px">📄</div><div class="uf-info"><div class="uf-name">${f.name}</div><div class="uf-meta">${s} · <span id="${prefix}-ocr-st" style="color:var(--amber);font-weight:600">⏳ Reading…</span></div></div></div>`);
+  const apiKey=sessionStorage.getItem('wio_api_key')||eApiKey;
+  if(!apiKey||!apiKey.startsWith('sk-ant-')) {
+    setHTML(prefix+'-ocr-st','Uploaded · Add API key to auto-fill');
+    document.getElementById(prefix+'-ocr-st').style.color='var(--muted)';
+    return;
+  }
+  try {
+    const b64=await toB64(f);
+    const mt=f.name.toLowerCase().endsWith('.pdf')?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:MODEL,max_tokens:600,messages:[{role:'user',content:[
+        {type:'document',source:{type:'base64',media_type:mt,data:b64}},
+        {type:'text',text:'Extract contract details. Return ONLY valid JSON (null for missing):\n{"title":null,"vendor_name":null,"vendor_email":null,"contract_type":null,"value":null,"start_date":null,"end_date":null,"due_date":null,"procurement_officer":null,"legal_reviewer":null,"responsible_person":null,"description":null,"priority":null}\nRules: dates YYYY-MM-DD, priority 1-4, contract_type one of [Renewal,New Contract,Amendment,SLA Agreement,NDA,MSA,SOW,Other], value as number only.'}
+      ]}]})});
+    const data=await res.json();
+    const txt=(data.content||[]).map(b=>b.text||'').join('');
+    const m=txt.match(/\{[\s\S]*\}/);
+    if(!m) throw new Error('No JSON');
+    const r=JSON.parse(m[0]);
+    const fm={nc:{title:'nc-title',vendor_name:'nc-vendor',vendor_email:'nc-email',contract_type:'nc-type',value:'nc-value',start_date:'nc-start',end_date:'nc-end',description:'nc-desc'},
+              pn:{title:'pn-title',vendor_name:'pn-vendor',vendor_email:'pn-email',contract_type:'pn-type',value:'pn-value',due_date:'pn-due',procurement_officer:'pn-proc',legal_reviewer:'pn-legal',responsible_person:'pn-resp',priority:'pn-priority'}};
+    let filled=0;
+    Object.entries(r).forEach(([k,v])=>{
+      if(!v||v==='null') return;
+      const id=(fm[prefix]||{})[k]; if(!id) return;
+      const el=document.getElementById(id); if(!el) return;
+      if(el.tagName==='SELECT'){const o=Array.from(el.options).find(op=>op.value==v||op.text.toLowerCase().includes(String(v).toLowerCase()));if(o){el.value=o.value;filled++;}}
+      else{el.value=v;el.style.borderColor='var(--teal)';el.style.background='#edfaf8';setTimeout(()=>{el.style.borderColor='';el.style.background='';},3000);filled++;}
+    });
+    const st=document.getElementById(prefix+'-ocr-st');
+    if(st){st.textContent=`✅ ${filled} fields auto-filled`;st.style.color='var(--green)';}
+    toast(`✨ ${filled} fields extracted from contract`);
+  } catch(e) {
+    const st=document.getElementById(prefix+'-ocr-st');
+    if(st){st.textContent='Uploaded';st.style.color='var(--muted)';}
+  }
+}
+
+// ═══ REDLINE ANALYSIS ═══
+function rlUpload(type, input) {
+  if(!input.files||!input.files[0]) return;
+  const f=input.files[0];
+  if(type==='orig') _rlOrigFile=f; else _rlRedFile=f;
+  const s=f.size>1048576?(f.size/1048576).toFixed(1)+' MB':(f.size/1024).toFixed(0)+' KB';
+  const disp=`rl-${type}-disp`;
+  setHTML(disp,`<div class="uf"><div style="font-size:20px">📄</div><div class="uf-info"><div class="uf-name">${f.name}</div><div class="uf-meta">${s}</div></div></div>`);
+  rlKeyChk(document.getElementById('rl-api-key').value);
+}
+function rlKeyChk(v) {
+  // Key is pre-loaded
+  const apiV = v||eApiKey||'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';
+  const ok = apiV.startsWith('sk-ant-');
+  if(ok) { sessionStorage.setItem('wio_api_key', apiV); eApiKey=apiV; }
+  const btn=document.getElementById('rl-run-btn');
+  if(btn) btn.disabled=!ok||(!_rlOrigFile&&!_rlRedFile);
+}
+async function runRL() {
+  const apiKey=document.getElementById('rl-api-key').value.trim();
+  if(!apiKey.startsWith('sk-ant-')){toast('⚠ Enter API key');return;}
+  document.getElementById('rl-prog').style.display='block';
+  document.getElementById('rl-run-btn').disabled=true;
+  const setProg=(pct,txt)=>{
+    document.getElementById('rl-prog-fill').style.width=pct+'%';
+    document.getElementById('rl-prog-txt').textContent=txt;
+  };
+  try {
+    setProg(10,'Reading documents…');
+    const parts=[];
+    if(_rlOrigFile){const b64=await toB64(_rlOrigFile);const mt=_rlOrigFile.name.endsWith('.pdf')?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document';parts.push({type:'document',source:{type:'base64',media_type:mt,data:b64},title:'ORIGINAL CONTRACT'});}
+    if(_rlRedFile){const b64=await toB64(_rlRedFile);const mt=_rlRedFile.name.endsWith('.pdf')?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document';parts.push({type:'document',source:{type:'base64',media_type:mt,data:b64},title:'REDLINED VERSION'});}
+    const both=_rlOrigFile&&_rlRedFile;
+    parts.push({type:'text',text:both
+      ?'Compare the ORIGINAL CONTRACT with the REDLINED VERSION. Return ONLY valid JSON:\n{"summary":"2-3 sentence overview","risk_level":"Low|Medium|High","added":[{"clause":"name","text":"added text"}],"removed":[{"clause":"name","text":"removed text"}],"modified":[{"clause":"name","before":"original","after":"new text","significance":"why it matters"}],"key_concerns":["concern1"],"recommendation":"Approve|Approve with conditions|Reject","recommendation_reason":"reason"}'
+      :'Summarise key clauses and terms from this contract. Return ONLY valid JSON:\n{"summary":"2-3 sentence overview","risk_level":"Low|Medium|High","added":[],"removed":[],"modified":[],"key_clauses":[{"clause":"name","text":"content"}],"key_concerns":["concern1"],"recommendation":"Approve|Review Required","recommendation_reason":"reason"}'
+    });
+    setProg(50,'AI analysing…');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:MODEL,max_tokens:2000,messages:[{role:'user',content:parts}]})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const data=await res.json();
+    const txt=(data.content||[]).map(b=>b.text||'').join('');
+    const m=txt.match(/\{[\s\S]*\}/);
+    if(!m) throw new Error('No JSON in response');
+    const parsed=JSON.parse(m[0]);
+    setProg(90,'Saving…');
+    if(_curRef) {
+      const c=_contracts.find(x=>x.ref===_curRef);
+      const hist=[...(c?.history||[]),{action:'Redline Analysis Completed',by:role,at:new Date().toISOString()}];
+      await sbPatch('contracts','ref',_curRef,{
+        redline_summary:JSON.stringify(parsed),
+        redlined_doc_name:_rlRedFile?.name||null,
+        redline_by:role,
+        redline_at:new Date().toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'}),
+        history:JSON.stringify(hist)
+      });
+    }
+    setProg(100,'Done!');
+    await refreshAll();
+    document.getElementById('rl-modal').classList.remove('open');
+    if(_curRef) openDr(_curRef);
+    toast('✅ Redline analysis complete');
+    _rlOrigFile=null; _rlRedFile=null;
+    setHTML('rl-orig-disp',''); setHTML('rl-red-disp','');
+  } catch(e) {
+    toast('⚠ Analysis failed: '+e.message.slice(0,60));
+  } finally {
+    document.getElementById('rl-prog').style.display='none';
+    document.getElementById('rl-run-btn').disabled=false;
+  }
+}
+function renderRL(rl,by,at) {
+  if(typeof rl==='string') rl=sj(rl)||{};
+  const rc={Low:'var(--green)',Medium:'var(--amber)',High:'var(--red)'};
+  const rr={Approve:'var(--green)','Approve with conditions':'var(--amber)',Reject:'var(--red)','Review Required':'var(--amber)'};
+  let h=`<div style="background:var(--blue-light);border-radius:9px;padding:14px;margin-bottom:12px">
+    <div style="font-size:12px;font-weight:700;color:var(--blue-mid);margin-bottom:6px">⚖️ AI Redline Summary <span style="font-size:10px;color:var(--muted);font-weight:400">${by||''} ${at||''}</span></div>
+    <div style="font-size:12px;line-height:1.6">${rl.summary||'—'}</div>
+    <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;color:${rc[rl.risk_level]||'var(--muted)'}">⚠ Risk: ${rl.risk_level||'—'}</span>
+      <span style="font-size:11px;font-weight:700;color:${rr[rl.recommendation]||'var(--muted)'}">→ ${rl.recommendation||'—'}</span>
+    </div>
+  </div>`;
+  if(rl.added?.length) h+=`<div class="rl-container"><div class="rl-hdr added">✚ Added (${rl.added.length})</div>${rl.added.map(a=>`<div class="rl-item"><div class="rl-clause">${a.clause||'New'}</div><div class="rl-new">${a.text}</div></div>`).join('')}</div>`;
+  if(rl.removed?.length) h+=`<div class="rl-container"><div class="rl-hdr removed">✖ Removed (${rl.removed.length})</div>${rl.removed.map(r=>`<div class="rl-item"><div class="rl-clause">${r.clause||'Removed'}</div><div class="rl-del">${r.text}</div></div>`).join('')}</div>`;
+  if(rl.modified?.length) h+=`<div class="rl-container"><div class="rl-hdr modified">✎ Modified (${rl.modified.length})</div>${rl.modified.map(m=>`<div class="rl-item"><div class="rl-clause">${m.clause}</div><div class="rl-before">${m.before}</div><div class="rl-after">${m.after}</div>${m.significance?`<div style="font-size:10px;color:var(--muted);margin-top:4px;font-style:italic">ℹ ${m.significance}</div>`:''}</div>`).join('')}</div>`;
+  if(rl.key_clauses?.length) h+=`<div class="rl-container"><div class="rl-hdr summary">📑 Key Clauses</div>${rl.key_clauses.map(k=>`<div class="rl-item"><div class="rl-clause">${k.clause}</div><div>${k.text}</div></div>`).join('')}</div>`;
+  if(rl.key_concerns?.length) h+=`<div style="background:var(--amber-light);border:1px solid #f5d090;border-radius:9px;padding:12px;margin-top:10px"><div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px">⚠ Key Concerns</div>${rl.key_concerns.map(c=>`<div style="font-size:12px;color:var(--amber);padding:2px 0">• ${c}</div>`).join('')}</div>`;
+  return h;
+}
+
+// ═══ ENROLMENT (eGoStep etc.) ═══
+function eGoStep(n) {
+  if(n > eStep && n > 0) return; // can't skip ahead
+  eStep = n;
+  eUpdateStepper();
+  document.querySelectorAll('.step-panel').forEach((p,i)=>p.classList.toggle('active',i===n));
+}
+function eUpdateStepper() {
+  for(let i=0;i<=5;i++) {
+    const el=document.getElementById('estep-'+i);
+    const num=document.getElementById('ewsn-'+i);
+    if(!el) continue;
+    if(i<eStep) {
+      el.style.cssText=`flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;${i<5?'border-right:1px solid var(--border);':''}background:var(--green-light);color:var(--green);font-weight:600;opacity:1;pointer-events:auto`;
+      if(num){num.style.background='var(--green)';num.style.color='#fff';num.textContent='✓';}
+    } else if(i===eStep) {
+      el.style.cssText=`flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;${i<5?'border-right:1px solid var(--border);':''}background:var(--blue-light);color:var(--blue-mid);font-weight:600;opacity:1;pointer-events:auto`;
+      if(num){num.style.background='var(--blue-mid)';num.style.color='#fff';num.textContent=String(i+1);}
+    } else {
+      el.style.cssText=`flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;font-size:10px;gap:3px;text-align:center;cursor:pointer;${i<5?'border-right:1px solid var(--border);':''}opacity:.4;pointer-events:none`;
+      if(num){num.style.background='var(--border)';num.style.color='var(--muted)';num.textContent=String(i+1);}
+    }
+  }
+}
+// Alias vGoStep to eGoStep for step panels that use vGoStep
+function vGoStep(n) { eGoStep(n); }
+function vJumpStep(n) { eStep=n; eGoStep(n); }
+
+// ═══ OCR ═══
+function showOCR() { document.getElementById('ocr-ov').classList.remove('hidden'); }
+function skipOCR() { document.getElementById('ocr-ov').classList.add('hidden'); }
+function validateApiKey(v) {
+  const ok=v&&v.startsWith('sk-ant-');
+  document.getElementById('api-key-status').textContent=v.length===0?'⬜':ok?'✅':'❌';
+  if(ok){eApiKey=v;sessionStorage.setItem('wio_api_key',v);}
+}
+function toggleKeyVis() {
+  const el=document.getElementById('api-key-input');
+  el.type=el.type==='password'?'text':'password';
+}
+function handleOCRFiles(files) {
+  if(!files||!files.length) return;
+  eOcrFiles=Array.from(files); eOcrRes={};
+  const list=document.getElementById('ocr-file-list');
+  list.innerHTML=eOcrFiles.map((f,i)=>`<div class="ofi" id="ofi-${i}"><div style="font-size:18px">📄</div><div class="ofi-info"><div class="ofi-name">${f.name}</div><div class="ofi-meta">${(f.size/1024).toFixed(0)} KB</div></div><span class="ofi-status q" id="ofs-${i}">Queued</span></div>`).join('');
+  if(!eApiKey){toast('⚠ Enter your API key first');return;}
+  processOCR();
+}
+async function processOCR() {
+  const progWrap=document.getElementById('ocr-prog-wrap');
+  const progFill=document.getElementById('ocr-prog-fill');
+  const progLbl=document.getElementById('ocr-prog-label');
+  const progPct=document.getElementById('ocr-prog-pct');
+  progWrap.style.display='block';
+  for(let i=0;i<eOcrFiles.length;i++) {
+    const f=eOcrFiles[i];
+    const st=document.getElementById('ofs-'+i);
+    if(st){st.className='ofi-status r';st.textContent='Reading…';}
+    const pct=Math.round((i/eOcrFiles.length)*80);
+    progFill.style.width=pct+'%'; progPct.textContent=pct+'%'; progLbl.textContent=`Reading ${f.name}…`;
+    try {
+      const b64=await toB64(f);
+      const isImg=f.type.startsWith('image/');
+      const mt=isImg?f.type:(f.name.endsWith('.pdf')?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      const ocrPromptText=`You are an expert vendor document reader for a procurement onboarding system.
+Extract ALL information from this document and return ONLY a valid JSON object with these exact keys (null for missing):
+{"company_name":null,"company_owner":null,"addr_building":null,"addr_street":null,"addr_city":null,"addr_state":null,"addr_zip":null,"addr_country":null,"company_email":null,"company_website":null,"company_phone":null,"jurisdiction":null,"parent_org":null,"bank_name":null,"bank_account":null,"bank_branch":null,"bank_branch_loc":null,"bank_beneficiary":null,"bank_swift":null,"bank_country":null,"iban_aed":null,"iban_fcy":null,"trn_number":null,"license_number":null,"license_start":null,"license_expiry":null,"initiator_name":null,"initiator_email":null,"vendor_type":null,"nature_of_business":null,"domestic_intl":null,"esc_name_1":null,"esc_email_1":null,"esc_phone_1":null,"esc_name_2":null,"esc_email_2":null,"esc_phone_2":null,"esc_name_3":null,"esc_email_3":null,"esc_phone_3":null}
+Rules: dates YYYY-MM-DD, domestic_intl="domestic" or "international", return ONLY JSON no markdown.\``;
+      const content=[isImg?{type:'image',source:{type:'base64',media_type:mt,data:b64}}:{type:'document',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:ocrPromptText}];
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+        headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true','x-api-key':eApiKey,'anthropic-version':'2023-06-01'},
+        body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content}]})});
+      const data=await res.json();
+      const txt=(data.content||[]).map(b=>b.text||'').join('');
+      const m=txt.match(/\{[\s\S]*\}/);
+      if(m) {
+        const r=JSON.parse(m[0]);
+        Object.entries(r).forEach(([k,v])=>{if(v&&v!=='null'&&v!=='N/A')eOcrRes[k]=v;});
+        if(st){st.className='ofi-status d';st.textContent='Done';}
+      }
+    } catch(e) {
+      if(st){st.className='ofi-status e';st.textContent='Error';}
+    }
+  }
+  progFill.style.width='100%'; progPct.textContent='100%'; progLbl.textContent='Complete!';
+  showOCRPreview();
+  document.getElementById('apply-ocr-btn').disabled=false;
+}
+function showOCRPreview() {
+  const prev=document.getElementById('ocr-preview');
+  const rows=document.getElementById('ocr-preview-rows');
+  const count=document.getElementById('ocr-prev-cnt');
+  const FL={company_name:'Company Name',company_owner:'Company Owner',addr_building:'Building',addr_street:'Street',addr_city:'City',addr_state:'State',addr_zip:'Postal Code',addr_country:'Country',company_email:'Email',company_website:'Website',company_phone:'Phone',jurisdiction:'Jurisdiction',parent_org:'Parent Org',bank_name:'Bank Name',bank_account:'Account No.',bank_branch:'Branch',bank_branch_loc:'Branch Loc.',bank_beneficiary:'Beneficiary',bank_swift:'SWIFT',bank_country:'Bank Country',iban_aed:'IBAN AED',iban_fcy:'IBAN FCY',trn_number:'TRN',license_number:'License No.',license_start:'Lic. Start',license_expiry:'Lic. Expiry',initiator_name:'Initiator',initiator_email:'Init. Email',vendor_type:'Vendor Type',nature_of_business:'Nature',domestic_intl:'Dom/Intl',esc_name_1:'Contact 1',esc_email_1:'C1 Email',esc_phone_1:'C1 Phone',esc_name_2:'Contact 2',esc_email_2:'C2 Email',esc_phone_2:'C2 Phone',esc_name_3:'Contact 3',esc_email_3:'C3 Email',esc_phone_3:'C3 Phone'};
+  const entries=Object.entries(eOcrRes).filter(([k,v])=>v&&v!=='null'&&v!=='N/A');
+  count.textContent=entries.length+' fields';
+  rows.innerHTML=entries.map(([k,v])=>`<div class="ofr"><div class="ofr-key">${FL[k]||k}</div><div class="ofr-val">${v}</div><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:var(--green-light);color:var(--green);font-weight:700">✓</span></div>`).join('');
+  prev.style.display='block';
+}
+function applyOCR() {
+  const fieldMap={
+    company_name:'company-name',company_owner:'company-owner',addr_city:'addr-city',
+    addr_state:'addr-state',addr_country:'addr-country',addr_building:'addr-building',
+    addr_street:'addr-street',addr_zip:'addr-zip',company_email:'company-email',
+    company_website:'company-website',company_phone:'company-phone',
+    trn_num:'trn-num',lic_num:'lic-num',lic_start:'lic-start',lic_expiry:'lic-expiry',
+    bank_name:'bank-name',bank_branch:'bank-branch',bank_branch_loc:'bank-branch-loc',
+    bank_acct:'bank-acct',bank_beneficiary:'bank-beneficiary',bank_swift:'bank-swift',
+    iban_aed:'iban-aed',iban_fcy:'iban-fcy',init_name:'init-name',init_email:'init-email',
+    kf_userid:'kf-userid',kf_username:'kf-username',
+  };
+  let filled=0;
+  Object.entries(eOcrRes).forEach(([k,v])=>{
+    if(!v||v==='null'||v==='N/A') return;
+    const id=fieldMap[k]; if(!id) return;
+    const el=document.getElementById(id); if(!el) return;
+    el.value=v; el.classList.add('ocr-filled');
+    setTimeout(()=>el.classList.remove('ocr-filled'),4000); filled++;
+  });
+  skipOCR();
+  const banner=document.getElementById('ocr-banner');
+  if(banner){banner.style.display='flex';document.getElementById('ocr-banner-sub').textContent=filled+' fields auto-filled from documents.';}
+  toast('✨ '+filled+' fields filled from documents');
+}
+function guessDocType(name) {
+  name=name.toLowerCase();
+  if(name.includes('trade')||name.includes('license')||name.includes('commercial')) return 'cl';
+  if(name.includes('vat')||name.includes('trn')||name.includes('tax')) return 'vat';
+  if(name.includes('bank')||name.includes('auth')||name.includes('iban')) return 'bank';
+  if(name.includes('poa')||name.includes('board')||name.includes('resolution')) return 'poa';
+  if(name.includes('registration')||name.includes('form')||name.includes('kissflow')) return 'reg';
+  return 'other';
+}
+
+// ═══ COI STEP ═══
+function handleCOI(select) {
+  const v=select.value;
+  const warn=document.getElementById('coi-warning');
+  if(warn){warn.style.display=(v==='yes'||v==='unsure')?'block':'none';}
+}
+function submitCOI() {
+  const v=document.getElementById('coi-select')?.value||'no';
+  const reason=document.getElementById('coi-reason')?.value||'';
+  if((v==='yes'||v==='unsure')&&!reason){toast('⚠ Provide a COI explanation');return;}
+  eStep=1; eGoStep(1);
+}
+
+// ═══ GENERAL STEP ═══
+function selectDomInt(v) {
+  eDomInt=v;
+  document.querySelectorAll('[data-domint]').forEach(el=>el.style.display='block');
+  document.querySelectorAll('[data-intonly]').forEach(el=>el.style.display=v==='international'?'block':'none');
+  document.querySelectorAll('[data-domonly]').forEach(el=>el.style.display=v==='domestic'?'block':'none');
+}
+function onVendorType() {
+  // Show/hide relevant fields based on vendor type selection
+}
+function submitGeneral() {
+  const req=['init-name','init-email','vendor-type'];
+  const missing=req.filter(id=>!document.getElementById(id)?.value?.trim());
+  if(missing.length){toast('⚠ Complete all required fields');return;}
+  eStep=2; eGoStep(2);
+}
+
+// ═══ COMPANY & BANK STEP ═══
+function addIBANRow() {
+  const tbody=document.getElementById('iban-tbody');
+  if(!tbody) return;
+  const row=document.createElement('tr');
+  row.innerHTML=`<td><input placeholder="AED"></td><td><input placeholder="AE..."></td><td><button class="btn btn-sm btn-ghost" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(row);
+}
+function addEscRow() {
+  const tbody=document.getElementById('esc-tbody');
+  if(!tbody) return;
+  const row=document.createElement('tr');
+  row.innerHTML=`<td><input placeholder="Name"></td><td><input placeholder="Role"></td><td><input type="email" placeholder="Email"></td><td><input placeholder="+971..."></td><td><button class="btn btn-sm btn-ghost" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(row);
+}
+function toggleParent(cb) {
+  const wrap=document.getElementById('parent-wrap');
+  if(wrap) wrap.style.display=cb.checked?'block':'none';
+}
+function submitGeneral2() {
+  eStep=3; eGoStep(3);
+}
+
+// ═══ DOCUMENTS STEP ═══
+function trigUp(id) { document.getElementById(id)?.click(); }
+function handleDoc(docType, input) {
+  if(!input.files||!input.files[0]) return;
+  const f=input.files[0];
+  eDocState[docType]={file:f,name:f.name,verified:false};
+  const disp=document.getElementById(docType+'-display');
+  if(disp) disp.innerHTML=`<div class="doc-file"><div class="doc-file-icon">📄</div><div class="doc-file-info"><div class="doc-file-name">${f.name}</div></div><span class="doc-file-status checking">Pending</span></div>`;
+}
+function checkDocs() { eStep=4; eGoStep(4); }
+
+// ═══ SUBMIT ENROLMENT ═══
+async function submitVendor() {
+  const ref='WIO-'+Date.now().toString().slice(-6);
+  const now=new Date();
+  const row={
+    ref, status:'pending',
+    submittedat:now.toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'}),
+    company:document.getElementById('company-name')?.value||'',
+    email:document.getElementById('company-email')?.value||'',
+    phone:document.getElementById('company-phone')?.value||'',
+    trn:document.getElementById('trn-num')?.value||'',
+    licnum:document.getElementById('lic-num')?.value||'',
+    licexpiry:document.getElementById('lic-expiry')?.value||'',
+    bankname:document.getElementById('bank-name')?.value||'',
+    beneficiary:document.getElementById('bank-beneficiary')?.value||'',
+    ibanaed:document.getElementById('iban-aed')?.value||'',
+    initiatoremail:document.getElementById('init-email')?.value||'',
+    initiatorname:document.getElementById('init-name')?.value||'',
+    history:JSON.stringify([{action:'Vendor Submitted Enrolment',by:document.getElementById('init-email')?.value||'vendor',at:now.toISOString()}]),
+  };
+  const res=await sbPost('submissions',row);
+  if(res){toast('✅ Registration submitted to Wio Procurement!');eStep=0;eGoStep(0);}
+}
+function overrideSubmit() {
+  const reason=document.getElementById('override-reason')?.value?.trim();
+  if(!reason){toast('⚠ Provide a reason for override');return;}
+  toast('⚡ Submitting with override…');
+  submitVendor();
+}
+function runValidationAgent() {
+  toast('⚙ Validation requires API key — running basic checks…');
+  const errors=[];
+  const trn=document.getElementById('trn-num')?.value||'';
+  if(trn&&trn.replace(/\D/g,'').length!==15) errors.push('TRN must be exactly 15 digits');
+  const iban=document.getElementById('iban-aed')?.value||'';
+  if(iban&&!iban.startsWith('AE')) errors.push('UAE IBAN must start with AE');
+  if(errors.length) {
+    toast('⚠ '+errors[0]);
+  } else {
+    toast('✅ Basic validation passed');
+  }
+}
+function buildReview() {
+  const fields=[
+    ['Company',document.getElementById('company-name')?.value||'—'],
+    ['Email',document.getElementById('company-email')?.value||'—'],
+    ['TRN',document.getElementById('trn-num')?.value||'—'],
+    ['License No.',document.getElementById('lic-num')?.value||'—'],
+    ['Bank',document.getElementById('bank-name')?.value||'—'],
+    ['IBAN (AED)',document.getElementById('iban-aed')?.value||'—'],
+  ];
+  const sumEl=document.getElementById('review-summary');
+  if(sumEl) sumEl.innerHTML=`<div class="d-grid">${fields.map(([l,v])=>`<div class="df"><div class="df-l">${l}</div><div class="df-v">${v}</div></div>`).join('')}</div>`;
+}
+function aiClassifyVendor() {
+  toast('🤖 AI classification requires API key');
+}
+
+// ═══ UTILS ═══
+function val(id) { return document.getElementById(id)?.value||''; }
+function setTxt(id,v) { const el=document.getElementById(id); if(el) el.textContent=v; }
+function setHTML(id,v) { const el=document.getElementById(id); if(el) el.innerHTML=v; }
+function setVal(id,v) { const el=document.getElementById(id); if(el) el.value=v||''; }
+function clearEl(id) { const el=document.getElementById(id); if(el) el.value=''; }
+function toast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
+function toB64(f) { return new Promise((r,e)=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.onerror=e;fr.readAsDataURL(f);}); }
+
+// ═══ AUTO-REFRESH ═══
+setInterval(()=>{if(role) refreshAll();}, 30000);
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded', ()=>{
+  // API key pre-loaded silently
+  const _ak = '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';
+  sessionStorage.setItem('wio_api_key', _ak);
+  eApiKey = _ak;
+  ['api-key-input','rl-api-key'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value=_ak;
+  });
+  const ksEl=document.getElementById('api-key-status');
+  if(ksEl) ksEl.textContent='✅';
+  // OCR drag/drop
+  const oDrop=document.getElementById('ocr-drop');
+  if(oDrop){
+    oDrop.addEventListener('dragover',e=>{e.preventDefault();oDrop.classList.add('drag');});
+    oDrop.addEventListener('dragleave',()=>oDrop.classList.remove('drag'));
+    oDrop.addEventListener('drop',e=>{e.preventDefault();oDrop.classList.remove('drag');handleOCRFiles(e.dataTransfer.files);});
+  }
+});
+</script>
+</body>
+</html>
